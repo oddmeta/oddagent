@@ -1,0 +1,162 @@
+{
+  "scene_list": [
+    {
+      "tool_name": "meeting_schedule",
+      "name": "预约会议",
+      "description": "预约会议服务，可创建指定时间、地点的会议。",
+      "example": "JSON：[{'name': 'time', 'desc': '会议时间，格式为yyyy-MM-dd HH:mm:ss', 'value': ''}, {'name': 'place', 'desc': '会议地点', 'value': ''} ]\n输入：帮我预约一个2046年4月18日10:00:00在北京的会议\n答：{ 'time': '2046-04-18 10:00:00', 'place': '北京' }",
+      "parameters": [
+        {"name": "time", "desc": "会议时间，格式为yyyy-MM-dd HH:mm:ss", "type": "string", "required": false},
+        {"name": "place", "desc": "会议地点", "type": "string", "required": false}
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_create",
+      "name": "创建会议",
+      "description": "创建会议服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_end",
+      "name": "结束会议",
+      "description": "结束会议服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_join",
+      "name": "加入会议",
+      "description": "加入会议服务，可加入指定会议。",
+      "example": "JSON：[{'name': 'meeting', 'desc': '会议名称', 'value': ''}]\n输入：帮我加入奥德元的会议\n答：{ 'meeting': '奥德元' }",
+      "parameters": [
+        {"name": "meeting", "desc": "会议名称", "type": "string", "required": true}
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_leave",
+      "name": "退出会议",
+      "description": "退出会议服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_invite",
+      "name": "邀请参会人",
+      "description": "邀请参会人服务，可邀请指定会议的参会人。",
+      "example": "JSON：[{'name': 'invitees', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：帮我邀请Jacky和Catherine\n答：{ 'invitees': 'Jacky,Catherine' }",
+      "parameters": [
+        {"name": "invitees", "desc": "参会人列表，逗号分隔", "type": "string", "required": true}
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_dropout",
+      "name": "挂断参会人",
+      "description": "挂断参会人服务，可挂断指定会议的参会人。",
+      "example": "JSON：[{'name': 'participants', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：帮我挂断Jacky和Catherine\n答：{ 'participants': 'Jacky,Catherine' }",
+      "parameters": [
+        {"name": "participants", "desc": "参会人列表，逗号分隔", "type": "string", "required": true}
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_open_camera",
+      "name": "打开摄像头",
+      "description": "打开摄像头服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_close_camera",
+      "name": "关闭摄像头",
+      "description": "关闭摄像头服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_open_microphone",
+      "name": "打开麦克风",
+      "description": "打开麦克风服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_close_microphone",
+      "name": "关闭麦克风",
+      "description": "关闭麦克风服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "send_dual_stream",
+      "name": "发送双流",
+      "description": "发送双流服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "stop_dual_stream",
+      "name": "停止双流",
+      "description": "停止双流服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_open_subtitle",
+      "name": "打开同声字幕",
+      "description": "打开同声字幕服务。",
+      "parameters": [
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name": "meeting_open_notes",
+      "name": "打开会议纪要",
+      "description": "打开会议纪要服务。",
+      "parameters": [
+        {}
+      ],
+      "enabled": true
+    },  
+    {
+      "tool_name": "meeting_close_notes",
+      "name": "关闭会议纪要",
+      "description": "关闭会议纪要服务。",
+      "parameters": [
+        {}
+      ],
+      "enabled": true
+    }, 
+    {
+      "tool_name": "password_reset",
+      "name": "密码重置",
+      "description": "密码重置，提交手机号和身份证号。",
+      "parameters": [
+        {"name": "id_number", "desc": "身份证号", "type": "string", "required": true}
+      ],
+      "enabled": true
+    },
+    {
+      "tool_name":   "chat_log",
+      "name": "对话日志记录",
+      "description": "对话日志记录，提交手机号、操作和日志内容。",
+      "parameters": [
+        {"name": "action", "desc": "操作", "type": "string", "required": true},
+        {"name": "log_content", "desc": "日志内容", "type": "string", "required": true}
+      ],
+      "enabled": true
+    }
+  ]
+}
