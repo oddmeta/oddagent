@@ -1,10 +1,10 @@
 **Read this in other languages: [English](README.en.md), [中文](README.md).**
 
-# OddAgent：自己动手轻松实现一个你自己的“小艺”、“小爱同学”
+# OddAgent：轻松手搓一个你自己的“小艺”、“小爱同学”
 
 [TOC]
 
-想自己动手来实现一个完全属于你自己的小爱同学、小艺吗？如果有你这么一个想法，而又不知道该如何开始的话，那么OddAgent项目可以成为你非常容易上手的开源项目。
+想自己动手来手搓一个完全属于你自己的“小爱同学”、“小艺”吗？如果有你这么一个想法，而又不知道该如何开始的话，那么OddAgent项目可以成为你非常容易上手的开源项目。
 
 本来这个功能是[小落同学](https://x.oddmeta.net "小落同学")在去年就已经支持，由于前两天公司老板说需要做一个基于LLM的智能助手系统，因此就先从[小落同学](https://x.oddmeta.net "小落同学")项目里把相关的代码摘了一下出来，单独搞了一个OddAgent项目出来，作为一个基于LLM的智能助手系统，提供多轮问答、流式AI聊天等功能独立项目来演进。
 
@@ -186,13 +186,15 @@ python app.py
 ### 1. 注意事项
 
 - 配置LLM：确保API_KEY配置正确，否则无法调用LLM服务
+- 工具模板配置：可根据您自己的需要自行配置相对应的意图工具
+- 语音支持
+  - 若需要语音支持，可自行下载安装部署 [OddAsr项目](https://github.com/oddmeta/oddasr "OddAsr项目")
+  - OddAsr部署好后，修改`odd_agent_config.py`，并修改其中的ODD_ASR_URL地址为你自己的地址，比如： 'http://172.16.237.141:9002'
+- 工具模板配置及API调用：在[小落同学](https://x.oddmeta.net "小落同学")里所有的后台API都是自己封装的，API的名字通常就是 工具配置里的 tool_name，但是如果一个工具需调用第三方的API来实现实际功能时，API的地址(url）、头（headers）、方法（Method）以及参数通常千奇百怪，因此整个工具模板配置的结构相比于[小落同学](https://x.oddmeta.net "小落同学")项目有了一些改动，并且单独出一个处理API请求的类（`api_request_composer.py`）和一个API响应的类（`api_request_composer.py`），在[OddAgent项目](https://github.com/oddmeta/oddagent "OddAgent项目")里，每个工具相关的业务都需在这两个类里由用户自行实现。
+- 语音识别优化：如果使用了OddAsr来让OddAgent支持语音交互的话，需要将一些名词（如：人名、会议名、会议室名、参会成员列表等）以热词的方式加入的OddAsr的请求的API里，以让语音转写功能更加准确。
 - 生产环境注意事项：
 	- 开发环境建议设置`DEBUG=True`，生产环境建议设置为False
 	- 会话数据当前存储在内存中，生产环境建议使用Redis或数据库
-- 工具模板配置：可根据您自己的需要自行配置相对应的意图工具
-- 语音支持：若需要语音支持，可自行下载安装部署 [OddAsr项目](https://github.com/oddmeta/oddasr "OddAsr项目")
-- 工具模板配置及API调用：在[小落同学](https://x.oddmeta.net "小落同学")里所有的后台API都是自己封装的，API的名字通常就是 工具配置里的 tool_name，但是如果一个工具需调用第三方的API来实现实际功能时，API的地址(url）、头（headers）、方法（Method）以及参数通常千奇百怪，因此整个工具模板配置的结构相比于[小落同学](https://x.oddmeta.net "小落同学")项目有了一些改动，并且单独出一个处理API请求的类（`api_request_composer.py`）和一个API响应的类（`api_request_composer.py`），在[OddAgent项目](https://github.com/oddmeta/oddagent "OddAgent项目")里，每个工具相关的业务都需在这两个类里由用户自行实现。
-- 语音识别优化：如果使用了OddAsr来让OddAgent支持语音交互的话，需要将一些名词（如：人名、会议名、会议室名、参会成员列表等）以热词的方式加入的OddAsr的请求的API里，以让语音转写功能更加准确。
 
 ### 2. 待完成功能
 
