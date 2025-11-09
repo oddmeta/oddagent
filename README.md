@@ -1,3 +1,5 @@
+**Read this in other languages: [English](README.en.md), [中文](README.md).**
+
 # OddAgent：自己动手轻松实现一个你自己的“小艺”、“小爱同学”
 
 [TOC]
