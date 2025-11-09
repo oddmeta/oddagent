@@ -1,8 +1,8 @@
 
 import uuid
 from threading import Lock
-from flask import Flask, request, jsonify, send_file, Response, Blueprint
-from flask_cors import CORS
+from flask import request, jsonify, Response, Blueprint, make_response
+import requests
 
 from logic.odd_agent import OddAgent
 from tools.tool_template_utils import load_all_tool_config
@@ -17,6 +17,109 @@ odd_agent = OddAgent(load_all_tool_config())
 # 会话存储 - 生产环境应使用Redis或数据库
 sessions = {}
 sessions_lock = Lock()
+
+def update_global_variants(global_variants):
+    """更新全局变量"""
+    odd_agent.update_global_variants(global_variants)
+
+
+def update_transmit():
+    try:
+        # 获取前端发送的数据
+        data = request.get_json() or {}
+        files = request.files if request.files else None
+        
+        # 转发请求到 ASR 服务
+        asr_url = f"{config.ODD_ASR_URL}/update_transmit"
+        
+        if files:
+            # 处理文件上传的情况
+            response = requests.post(asr_url, files=files)
+        else:
+            # 处理 JSON 数据的情况
+            response = requests.post(asr_url, json=data)
+        
+        # 使用make_response创建响应
+        flask_response = make_response(response.content)
+        flask_response.status_code = response.status_code
+        
+        # 复制必要的响应头
+        content_type = response.headers.get('content-type')
+        if content_type:
+            flask_response.headers['Content-Type'] = content_type
+            
+        return flask_response
+    
+    except Exception as e:
+        logger.error(f"Error proxying ASR request: {str(e)}")
+        return jsonify({'error': 'Proxy error', 'message': str(e)}), 500
+
+def proxy_asr_sentence():
+    try:
+        # 获取ASR服务的URL
+        asr_server_url = f"{config.ODD_ASR_URL}/v1/asr/sentence"
+        
+        # 获取原始请求的headers，但不要直接复制，因为requests会自动处理content-type等
+        headers = {'User-Agent': request.headers.get('User-Agent', ''),
+                   'Authorization': f'Bearer {config.ODD_ASR_TOKEN}'}
+        
+        # 根据请求类型处理不同的请求数据
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # 处理文件上传请求
+            files = {}
+            data = {}
+            
+            # 收集所有文件
+            for key, file in request.files.items():
+                files[key] = (file.filename, file.stream, file.mimetype)
+            
+            # 收集所有表单数据
+            for key, value in request.form.items():
+                data[key] = value
+            
+            # 发送multipart/form-data请求
+            response = requests.post(
+                asr_server_url,
+                headers=headers,
+                files=files,
+                data=data,
+                params=request.args,
+                timeout=config.API_TIMEOUT
+            )
+        else:
+            # 处理普通请求（JSON或其他）
+            headers['Content-Type'] = request.content_type or 'application/json'
+            response = requests.post(
+                asr_server_url,
+                headers=headers,
+                data=request.get_data(),
+                params=request.args,
+                timeout=config.API_TIMEOUT
+            )
+        
+        # 创建响应对象
+        flask_response = make_response(response.content)
+        flask_response.status_code = response.status_code
+        
+        # 复制响应headers
+        for header_name, header_value in response.headers.items():
+            # 跳过一些特定headers
+            if header_name.lower() not in ['content-encoding', 'transfer-encoding', 'content-length']:
+                flask_response.headers[header_name] = header_value
+        
+        # 确保设置CORS头
+        flask_response.headers['Access-Control-Allow-Origin'] = '*'
+        
+        return flask_response
+    except requests.exceptions.RequestException as e:
+        logger.error(f"ASR代理请求失败: {str(e)}")
+        return jsonify({"error": "Proxy error", "message": str(e)}), 500
+    except Exception as e:
+        logger.error(f"ASR代理处理出错: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+bp.add_url_rule('/proxy/asr/sentence/update_transmit', view_func=update_transmit, methods=['POST'])
+bp.add_url_rule('/proxy/asr/sentence', view_func=proxy_asr_sentence, methods=['POST'])
 
 def get_or_create_session(session_id=None):
     """获取或创建会话"""
@@ -34,15 +137,15 @@ def get_or_create_session(session_id=None):
         return session_id, sessions[session_id]
 
 
-@bp.route('/multi_question', methods=['POST'])
-def api_multi_question():
-    """多轮问答接口（原有接口保持兼容）"""
+@bp.route('/oddagent/chat', methods=['POST'])
+def api_oddagent_chat():
+    """OddAgent聊天接口"""
     data = request.json
     question = data.get('question')
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
-    response = odd_agent.process_multi_question(question)
+    response = odd_agent.process_oddagent_chat(question)
     return jsonify({"answer": response})
 
 @bp.route(f'{config.API_PREFIX}/llm_chat', methods=['POST'])
@@ -71,7 +174,7 @@ def api_llm_chat():
                     import time
                     
                     # 处理消息
-                    response = odd_agent.process_multi_question(user_input)
+                    response = odd_agent.process_oddagent_chat(user_input)
                     
                     # 流式输出：逐字符发送
                     buffer = ""
@@ -111,7 +214,7 @@ def api_llm_chat():
             return response
         else:
             # 非流式响应
-            response = odd_agent.process_multi_question(user_input)
+            response = odd_agent.process_oddagent_chat(user_input)
             return jsonify({
                 "response": response,
                 "session_id": session_id
@@ -123,7 +226,7 @@ def api_llm_chat():
 
 @bp.route(f'{config.API_PREFIX}/mock_slots', methods=['GET'])
 def api_mock_slots():
-    """获取模拟槽位数据"""
+
     mock_data = {
         "slots": {
             "phone_number": "13601708473",

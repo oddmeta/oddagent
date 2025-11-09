@@ -11,8 +11,10 @@ import json
 
 from tools import tool_prompts
 from tools.tool_processor import ToolProcessor
+from tools.tool_executer_impl import ToolExecuterImpl
+
 from tools.tool_template_utils import get_slot_parameters_from_tool, update_slot, format_name_value_for_logging, is_slot_fully_filled, llm_chat, \
-     try_load_json_from_string, get_dynamic_example, process_tool_action, process_tool_action_result
+     try_load_json_from_string, get_dynamic_example
 from tools.tool_datetime_utils import tool_get_current_date, tool_get_current_time
 from tools.tool_template_utils import get_slot_query_user_json, get_slot_update_json
 from odd_agent_logger import logger
@@ -26,6 +28,10 @@ class ToolProcessorImpl(ToolProcessor):
         self.slot_dynamic_example = get_dynamic_example(tool_config)
         self.slot = get_slot_parameters_from_tool(parameters)
         self.tool_prompts = tool_prompts
+        self.tool_api_url = tool_config.get("tool_api_url", "")
+        self.tool_api_method = tool_config.get("tool_api_method", "POST")
+        self.tool_api_headers = tool_config.get("tool_api_headers", {}) # TODO 暂未配置文件中读取，后续从配置文件中读取
+        self.tool_executer = ToolExecuterImpl(tool_config)
 
     def process(self, user_input, context):
         """
@@ -82,16 +88,16 @@ class ToolProcessorImpl(ToolProcessor):
                 if slot_key:
                     slots_data[slot_key] = slot['value']
         
-        # 调用场景API
-        api_result = process_tool_action(tool_name, slots_data)
-        
+        # 调用工具API
+        api_result = self.tool_executer.execute(slots_data=slots_data)
+        logger.debug(f'API结果: {api_result}')
         # 处理API结果
         if "error" in api_result:
             logger.error(f"调用API时出现错误：{api_result['error']}")
             return f"抱歉，调用API时出现错误：{api_result['error']}"
         
         # 通过AI处理API结果，生成用户友好的回复
-        user_friendly_response = process_tool_action_result(api_result, context)
+        user_friendly_response = self.tool_executer.execute_result_parser(api_result, context)
 
         logger.debug(f'用户friendly_response: {user_friendly_response}')
 
@@ -113,8 +119,8 @@ class ToolProcessorImpl(ToolProcessor):
 
     def _get_tool_name(self):
         """
-        根据场景配置获取场景的英文键名
-        :return: 场景的英文键名
+        根据工具配置获取工具的英文键名
+        :return: 工具的英文键名
         """
         # 直接从tool_config中获取tool_name字段
         return self.tool_config.get('tool_name')

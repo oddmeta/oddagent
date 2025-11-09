@@ -1,32 +1,21 @@
 @echo off
 
-:: Set UTF-8 encoding
-chcp 65001 >nul
-
-:: Check Python virtual environment
-if not exist "venv" (
-    echo Creating Python virtual environment...
-    python -m venv venv
-    if not exist "venv" (
-        echo Python virtual environment creation failed.
-        exit /b 1
-    )
-)
-else (
-    echo Python virtual environment found.
+REM 检查是否存在Python虚拟环境
+if exist venv (    
+    echo 激活Python虚拟环境...
+    call venv\Scripts\activate
+) else (
+    echo Python虚拟环境不存在，使用系统Python...
 )
 
-:: Activate virtual environment
-echo Activating Python virtual environment...
-call venv\Scripts\activate
+REM 安装依赖（如果需要）
+if exist requirements.txt (
+    echo 安装项目依赖...
+    pip install -r requirements.txt
+)
 
-:: Install dependencies
-echo Installing Python dependencies...
-pip install -r requirements.txt
-
-:: Start the service
-echo Starting backend service (port 5050)...
+REM 启动Flask应用
+echo 启动OddAgent服务...
 python app.py
 
-:: Prevent window from closing (optional, uncomment if needed)
-:: pause
+pause

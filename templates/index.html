@@ -73,6 +73,9 @@
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
+      <div class="text-center col-12">
+        <h1>OddAgent Demo</h1>
+      </div>
     </div>
   </div><!-- /.container-fluid -->
 </section>
@@ -105,6 +108,7 @@
         </div>
 
         <div class="card-body">
+          <!--
           <div class="form-group" style="display: flex; justify-content: center; align-items: center;">
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="checkbox" id="enableSensword" name="enableSensword" checked>
@@ -115,17 +119,24 @@
               <label class="form-check-label" for="enableHotword">启用敏感词</label>
             </div>
           </div>
+          -->
+
+          <div class="form-group" style="display: flex; justify-content: center; align-items: center;">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="enableAutosend" name="enableAutosend" checked>
+              <label class="form-check-label" for="enableAutosend">自动发送</label>
+            </div>
+          </div>
 
           <div class="form-group text-center d-flex align-items-center justify-content-center">
             <label for="inputText" class="mr-2 mb-0">输入</label>
             <input type="text" class="form-control" id="inputText" name="inputText" required placeholder="请输入您的命令..." style="width: auto; flex: 1; max-width: 500px;">
             <button type="button" class="btn btn-success ml-2" onclick="sendMessage()">发送</button>
           </div>
-
   
           <div class="form-group text-center">
             <label for="recognitionResult">识别结果</label>
-              <textarea class="form-control" id="recognitionResult" rows="8" cols="16" placeholder="识别结果将显示在这里"></textarea>
+              <textarea class="form-control" id="recognitionResult" rows="12" cols="24" placeholder="识别结果将显示在这里"></textarea>
           </div>
         </div>
 
@@ -175,18 +186,22 @@
   var longPressTimer = null;
   var microphoneBtn = document.getElementById('microphoneBtn');
   var recordingText = document.getElementById('recordingText');
+  var inputText = document.getElementById('inputText');
   
   function sendMessage() {
-      var input = document.getElementById('inputText');
-      var message = input.value;
-      input.value = '';
+      var message = inputText.value;
+      if (message.trim() === '') {
+        alert('请输入您的命令！');
+        return;
+      }
+      inputText.value = '';
 
       // 显示用户输入的问题
       var chatOutput = document.getElementById('recognitionResult');
       chatOutput.innerHTML += '你: ' + message + '\n';
 
       // 发送请求到 Flask API
-      fetch('http://localhost:5050/multi_question', {
+      fetch('/oddagent/chat', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json'
@@ -201,6 +216,12 @@
       })
       .catch(error => console.error('Error:', error));
   }
+
+  inputText.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+          sendMessage();
+      }
+  });
 
   // 长按启动录音
   microphoneBtn.addEventListener('mousedown', function() {
@@ -308,7 +329,7 @@
           // 发送音频到/v1/asr接口
           $.ajax({
             type: 'POST',
-            url: '/v1/asr/sentence',
+            url: '/proxy/asr/sentence',
             data: formData,
             cache: false,
             processData: false,
@@ -323,7 +344,8 @@
               if (data.text) {
                 console.log('转写成功:\n' + data.text);
                 // 这里可以添加代码将转写结果显示在页面上
-                $("#recognitionResult").text(data.text+'\n');
+                if (inputText)
+                  inputText.value = data.text;
               } else if (data.error) {
                 console.error('转写失败: ' + data.error);
               }
@@ -407,7 +429,7 @@
   function update_transmit(flag) {
       $.ajaxSetup({ "xhrFields": true });
       $.ajax({
-        url: "/update_transmit",
+        url: "/proxy/asr/sentence/update_transmit",
         data: JSON.stringify({ "flag": flag }),
         contentType: "application/json",
         type: "Post",

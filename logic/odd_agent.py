@@ -25,6 +25,18 @@ class OddAgent:
         self.chat_history = []                          # 添加聊天记录存储
         self.is_slot_filling = False                    # 标记是否正在补槽阶段
 
+    def update_global_variants(self, global_variants):
+        """
+        更新全局变量。比如创建会议后，平台会返回一个confid，需要将其存储到全局变量中。
+        :param global_variants: 全局变量
+        """
+        logger.error(f"更新全局变量：{global_variants}")
+        
+        for key, value in global_variants.items():
+            logger.debug(f"更新全局变量：{key} = {value}")
+            if key in self.tool_templates:
+                self.tool_templates[key] = value
+        
     @staticmethod
     def load_tool_config(self, tool_config):
         """
@@ -46,54 +58,63 @@ class OddAgent:
         purpose_options = {}
         purpose_description = {}
         index = 1
-        for template_key, template_info in self.tool_templates.items():
-            purpose_options[str(index)] = template_key
-            purpose_description[str(index)] = template_info["description"]
-            index += 1
-        options_prompt = "\n".join([f"{key}. {value} - 请回复{key}" for key, value in purpose_description.items()])
-        options_prompt += "\n0. 无工具/无法判断/没有符合的选项 - 请回复0"
+        try:
+            for template_key, template_info in self.tool_templates.items():
+                purpose_options[str(index)] = template_key
 
-        # 发送选项给AI，带上聊天记录
-        last_tool_info = f"上次识别到的工具：{self.last_recognized_tool}" if self.last_recognized_tool else "上次识别到的工具：无"
-        user_choice = llm_chat(
-            f"有下面多种工具，需要你根据用户输入进行判断，以最新的聊天记录为准，只答选项\n{last_tool_info}\n{options_prompt}\n用户输入：{user_input}\n请回复序号：", 
-            user_input,
-            self.chat_history
-        )
+                if isinstance(template_info, dict) and "description" in template_info:
+                    purpose_description[str(index)] = template_info["description"]
+                    index += 1
+                else:
+                    # 如果不是字典或没有description键，使用默认值或跳过
+                    logger.warning(f"工具配置格式异常: {template_key}")
 
-        logger.debug(f'purpose_options: %s', purpose_options)
-        logger.debug(f'user_choice: %s', user_choice)
-        
-        # 修复：检查user_choice是否为None
-        if user_choice is None:
-            # 默认选择无工具
-            user_choices = ['0']
-        else:
-            user_choices = self._extract_continuous_digits(user_choice)
+            options_prompt = "\n".join([f"{key}. {value} - 请回复{key}" for key, value in purpose_description.items()])
+            options_prompt += "\n0. 无工具/无法判断/没有符合的选项 - 请回复0"
 
-        # 根据用户选择获取对应工具
-        if user_choices and user_choices[0] != '0':
-            # 可以判断工具，更新当前工具
-            new_purpose = purpose_options[user_choices[0]]
-            if new_purpose != self.current_purpose:
-                # 工具发生变化，重置补槽状态
-                self.current_purpose = new_purpose
-                self.last_recognized_tool = new_purpose  # 更新上次识别到的工具
-                self.is_slot_filling = False
-                # 清除之前的处理器
-                if new_purpose in self.processors:
-                    del self.processors[new_purpose]
-            logger.info(f"用户选择了工具：{self.tool_templates[self.current_purpose]['name']}")
-        else:
-            # 用户选择了"无工具/无法判断"
-            if self.current_purpose and self.is_slot_filling:
-                logger.warning(f"无法判断意图，保留当前工具：{self.tool_templates[self.current_purpose]['name']}")
+            # 发送选项给AI，带上聊天记录
+            last_tool_info = f"上次识别到的工具：{self.last_recognized_tool}" if self.last_recognized_tool else "上次识别到的工具：无"
+            user_choice = llm_chat(
+                f"有下面多种工具，需要你根据用户输入进行判断，以最新的聊天记录为准，只答选项\n{last_tool_info}\n{options_prompt}\n用户输入：{user_input}\n请回复序号：", 
+                user_input,
+                self.chat_history
+            )
+
+            logger.debug(f'purpose_options: {purpose_options}, user_choice: {user_choice}')
+            
+            # 修复：检查user_choice是否为None
+            if user_choice is None:
+                # 默认选择无工具
+                user_choices = ['0']
             else:
-                # 没有当前工具或不在补槽阶段，清空工具状态
-                self.current_purpose = ''
-                self.last_recognized_tool = ''  # 清除上次识别到的工具记录
-                self.is_slot_filling = False
-                logger.info("无法识别用户意图")
+                user_choices = self._extract_continuous_digits(user_choice)
+
+            # 根据用户选择获取对应工具
+            if user_choices and user_choices[0] != '0':
+                # 可以判断工具，更新当前工具
+                new_purpose = purpose_options[user_choices[0]]
+                if new_purpose != self.current_purpose:
+                    # 工具发生变化，重置补槽状态
+                    self.current_purpose = new_purpose
+                    self.last_recognized_tool = new_purpose  # 更新上次识别到的工具
+                    self.is_slot_filling = False
+                    # 清除之前的处理器
+                    if new_purpose in self.processors:
+                        del self.processors[new_purpose]
+                logger.info(f"用户选择了工具：{self.tool_templates[self.current_purpose]['name']}")
+            else:
+                # 用户选择了"无工具/无法判断"
+                if self.current_purpose and self.is_slot_filling:
+                    logger.warning(f"无法判断意图，保留当前工具：{self.tool_templates[self.current_purpose]['name']}")
+                else:
+                    # 没有当前工具或不在补槽阶段，清空工具状态
+                    self.current_purpose = ''
+                    self.last_recognized_tool = ''  # 清除上次识别到的工具记录
+                    self.is_slot_filling = False
+                    logger.info("无法识别用户意图")
+
+        except Exception as e:
+            logger.error(f"识别用户意图时出错：{e}")
 
     def load_processor(self, tool_name):
         """
@@ -134,11 +155,18 @@ class OddAgent:
         :param user_input: 用户输入
         :return: 默认回复
         """
+        logger.debug(f'generate_default_response: {user_input}, tool_templates: {self.tool_templates}')
+
         purpose_description = {}
         index = 1
+        
         for template_key, template_info in self.tool_templates.items():
-            purpose_description[str(index)] = template_info["description"]
-            index += 1
+            if isinstance(template_info, dict) and "description" in template_info:
+                purpose_description[str(index)] = template_info["description"]
+                index += 1
+            else:
+                # 如果不是字典或没有description键，使用默认值或跳过
+                logger.warning(f"工具配置格式异常: {template_key}")
         options_prompt = "\n".join([f"{key}. {value}" for key, value in purpose_description.items()])
         options_prompt += "\n0. 无工具/无法判断"
 
@@ -169,14 +197,14 @@ class OddAgent:
         # 提取数字回复
         digits = self._extract_continuous_digits(response)
         if digits and digits[0] == '1':
-            logger.info(f"检测到用户意图切换场景，当前场景：{current_tool_name}")
+            logger.info(f"检测到用户意图切换工具：{current_tool_name}")
             return True
         
         return False
 
-    def process_multi_question(self, user_input):
+    def process_oddagent_chat(self, user_input):
         """
-        处理多轮问答
+        处理OddAgent聊天
         :param user_input: 用户输入
         :return: 处理结果
         """
@@ -194,7 +222,7 @@ class OddAgent:
 
         # 有工具，标记为补槽阶段
         self.is_slot_filling = True
-        logger.info('current_purpose: %s', self.current_purpose)
+        logger.info('current_purpose: {self.current_purpose}')
 
         # 检测用户是否有切换工具的意图
         if self.is_tool_switched(user_input):
@@ -206,7 +234,7 @@ class OddAgent:
                 processor = self.load_processor(self.current_purpose)
                 response = processor.process(user_input, self.chat_history)
                 
-                if not response.startswith("请问") and not response.startswith("抱歉，无法找到场景"):
+                if not response.startswith("请问") and not response.startswith("抱歉，无法找到工具"):
                     self.reset_current_tool()
                 
                 self.chat_history.append({"role": "assistant", "content": response})

@@ -32,133 +32,51 @@ def load_tool_templates(file_path):
 def load_all_tool_config():
     """
     从本地tool_templates.json文件加载工具配置
-    特殊处理common_fields通用字段，将其合并到每个工具的parameters中
+    特殊处理global_variants通用字段，将其合并到每个工具的parameters中
     """
     all_tool_configs = {}
 
     # 搜索目录下的所有json文件
     for file_path in glob.glob("modules/**/*.json", recursive=True):
-        logger.info(f"加载工具配置: {file_path}")
+        # logger.info(f"加载工具配置: {file_path}")
         current_config = load_tool_templates(file_path)
         
-        # 提取通用字段
-        common_fields = current_config.get('common_fields', [])
+        # 提取全局变量
+        global_variants = current_config.get('global_variants', [])
+        # logger.debug(f"全局变量: {global_variants}")
+        # 处理工具列表
+        agent_tool_list = current_config.get('agent_tool_list', [])
+        # logger.debug(f"工具列表: {agent_tool_list}")
         
-        # 处理场景列表
-        scene_list = current_config.get('scene_list', [])
-        
-        for scene in scene_list:
-            tool_name = scene.get('tool_name')
+        for tool in agent_tool_list:
+            tool_name = tool.get('tool_name')
             if tool_name and tool_name not in all_tool_configs:
                 # 复制工具的parameters
-                tool_parameters = scene.get('parameters', []).copy()
+                tool_parameters = tool.get('parameters', []).copy()
                 
-                # 将common_fields合并到parameters前面
-                merged_parameters = common_fields.copy() + tool_parameters
-                
+                # FIXME 科达会议平台API接口、参数、响应格式变来变去不统一，导致全局变量有点问题，暂时禁用。将global_variants合并到parameters前面
+                # merged_parameters = global_variants.copy() + tool_parameters
+                merged_parameters = tool_parameters
+
                 # 构建工具配置，添加tool_name字段
                 all_tool_configs[tool_name] = {
                     "tool_name": tool_name,  # 添加英文工具名称
-                    "name": scene.get('name', ''),
-                    "description": scene.get('description', ''),
+                    "name": tool.get('name', ''),
+                    "description": tool.get('description', ''),
                     "parameters": merged_parameters,
-                    "enabled": scene.get('enabled', False),
-                    "example": scene.get('example', '')
+                    "enabled": tool.get('enabled', False),
+                    "example": tool.get('example', '')
                 }
 
-        # 处理其他非scene_list和common_fields的配置项
+        # 处理其他非agent_tool_list和global_variants的配置项
         for key, value in current_config.items():
-            if key not in ['common_fields', 'scene_list'] and key not in all_tool_configs:
+            if key not in ['global_variants', 'agent_tool_list'] and key not in all_tool_configs:
                 # 为其他配置项也添加tool_name字段
                 if isinstance(value, dict):
                     value['tool_name'] = key
                 all_tool_configs[key] = value
 
     return all_tool_configs
-
-
-def process_tool_action(tool_name, slots_data):
-    """
-    调用工具API
-    :param tool_name: 工具名称
-    :param slots_data: 槽位数据
-    :return: API响应结果
-    """
-    try:
-
-        print(f"            场景名称: {tool_name}")
-        print(f"            场景参数: {json.dumps(slots_data, ensure_ascii=False)}")
-        result = {
-            "code": 200, 
-            "message": "假装API调用成功", 
-            "data": 
-            {
-                "result": "成功", 
-                "message": "假装灰常滴成功！"
-            }
-        }
-        print(f"            API调用响应: {json.dumps(result, ensure_ascii=False)}")
-        return result
-
-        # # 构建API URL
-        # api_url = config.TOOL_API_URL_TEMPLATE.format(tool_name=tool_name)
-        
-        # # 准备请求头
-        # headers = {
-        #     "Content-Type": "application/json"
-        # }
-        # print(f"调用工具API: {api_url}")
-        # # 发送POST请求，直接发送扁平化的slots_data
-        # print(f"调用工具API: {api_url}")
-        # print(f"请求体: {json.dumps(slots_data, ensure_ascii=False)}")
-        # response = requests.post(
-        #     api_url, 
-        #     headers=headers, 
-        #     json=slots_data, 
-        #     timeout=config.API_TIMEOUT
-        # )
-        
-        # if response.status_code == 200:
-        #     result = response.json()
-        #     print(f"API调用成功: {json.dumps(result, ensure_ascii=False)}")
-        #     return result
-        # else:
-        #     print(f"API调用失败，状态码: {response.status_code}")
-        #     return {"error": f"API调用失败，状态码: {response.status_code}"}
-            
-    except requests.RequestException as e:
-        logger.error(f"API请求异常: {e}")
-        return {"error": f"API请求异常: {e}"}
-    except Exception as e:
-        logger.error(f"处理API响应时出错: {e}")
-        return {"error": f"处理API响应时出错: {e}"}
-
-
-def process_tool_action_result(api_result, chat_history=None):
-    """
-    处理API结果，通过AI生成用户友好的回复
-    :param api_result: API返回的结果
-    :param chat_history: 聊天记录
-    :return: 处理后的用户友好回复
-    """
-    try:
-        # 只取data部分发给AI
-        data_part = api_result.get("data", api_result)
-        prompt = config.API_RESULT_PROMPT.format(api_result=json.dumps(data_part, ensure_ascii=False))
-        
-        # 调用AI处理结果
-        result = llm_chat(prompt, None, chat_history)
-        
-        if result:
-            return result
-        else:
-            logger.error("处理API结果时出错: %s", e)
-            return "抱歉，处理结果时出现错误，请稍后重试。"
-            
-    except Exception as e:
-        logger.error(f"处理API结果时出错: {e}")
-        return "抱歉，处理结果时出现错误，请稍后重试。"
-
 
 def llm_chat(message, user_input, chat_history=None):
     """
@@ -240,7 +158,6 @@ def get_slot_parameters_from_tool(parameters):
         new_item = {"name": item["name"], "desc": item["desc"], "type": item["type"], "value": ""}
         output_data.append(new_item)
     return output_data
-
 
 def get_dynamic_example(tool_config):
     """

@@ -1,27 +1,5 @@
 {
-  "scene_list": [
-    {
-      "tool_name": "schedule_ring",
-      "name": "预约闹钟",
-      "description": "预约闹钟服务，可创建指定时间和闹钟备注。",
-      "example": "JSON：[{'name': 'time', 'desc': '闹钟时间，格式为yyyy-MM-dd HH:mm:ss', 'value': ''}, {'name': 'remark', 'desc': '闹钟备注', 'value': ''} ]\n输入：帮我预约一个2046年4月18日10:00:00的闹钟，备注为“会议时间”\n答：{ 'time': '2046-04-18 10:00:00', 'remark': '会议时间' }",
-      "parameters": [
-        {"name": "time", "desc": "闹钟时间，格式为yyyy-MM-dd HH:mm:ss", "type": "string", "required": false},
-        {"name": "remark", "desc": "闹钟备注", "type": "string", "required": false}
-      ],
-      "enabled": true
-    },
-    {
-      "tool_name": "book_train",
-      "name": "预订火车",
-      "description": "预订火车服务，可预订指定时间、地点的火车。",
-      "example": "JSON：[{'name': 'time', 'desc': '火车时间，格式为yyyy-MM-dd HH:mm:ss', 'value': ''}, {'name': 'place_from', 'desc': '火车出发地点', 'value': ''}, {'name': 'place_to', 'desc': '火车到达地点', 'value': ''} ]\n输入：帮我预订一个2046年4月18日10:00:00从北京到上海的火车\n答：{ 'time': '2046-04-18 10:00:00', 'place_from': '北京', 'place_to': '上海' }",
-      "parameters": [
-        {"name": "time", "desc": "火车时间，格式为yyyy-MM-dd HH:mm:ss", "type": "string", "required": false},
-        {"name": "place_from", "desc": "火车出发地点", "type": "string", "required": false},
-        {"name": "place_to", "desc": "火车到达地点", "type": "string", "required": false}
-      ],
-      "enabled": true
-    }
-  ]
-}
+    "agent_tool_list": [
+    ]
+  }
+  
