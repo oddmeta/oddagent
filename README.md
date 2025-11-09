@@ -7,7 +7,7 @@
 本来这个功能是[小落同学](https://x.oddmeta.net "小落同学")在去年就已经支持，由于前两天公司老板说需要做一个基于LLM的智能助手系统，因此就先从[小落同学](https://x.oddmeta.net "小落同学")项目里把相关的代码摘了一下出来，单独搞了一个OddAgent项目出来，作为一个基于LLM的智能助手系统，提供多轮问答、流式AI聊天等功能独立项目来演进。
 
 <div align="center">
-  <img src="static/images/banner.png" alt="OddAgent Logo" width="400">
+  <img src="static/images/OddAgent_400x200.png" alt="OddAgent Logo" width="400">
   
   [![GitHub Stars](https://img.shields.io/github/stars/oddmeta/oddagent.svg?style=social)](https://github.com/oddmeta/oddagent)
   [![Documentation](https://img.shields.io/badge/Documentation-Online-green.svg)](https://docs.oddmeta.net/)
@@ -133,7 +133,8 @@ python app.py
 │ └── plugins/ # 第三方插件 
 ├── templates/ # HTML模板 
 │ └── index.html # 主页面 
-├── log/ # 日志文件目录 │ └── odd_agent.log # 日志文件 
+├── log/ # 日志文件目录 
+│ └── odd_agent.log # 日志文件 
 ├── requirements.txt # 依赖清单 
 ├── start.bat # Windows启动脚本 
 └── start.sh # Linux/Mac启动脚本
