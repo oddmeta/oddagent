@@ -41,18 +41,6 @@
       "enabled": true
     },
     {
-      "tool_name": "meeting_join",
-      "name": "加入会议",
-      "description": "加入会议服务，可加入指定会议。",
-      "example": "JSON：[{'name': 'meeting', 'desc': '会议名称', 'value': ''}]\n输入：帮我加入奥德元的会议\n答：{ 'meeting': '奥德元' }",
-      "parameters": [
-        {"name": "meeting", "desc": "会议名称", "type": "string", "required": true}
-      ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_join",
-      "tool_api_method": "POST",
-      "enabled": true
-    },
-    {
       "tool_name": "meeting_leave",
       "name": "退出会议",
       "description": "退出会议服务。",

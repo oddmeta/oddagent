@@ -187,6 +187,7 @@
   var microphoneBtn = document.getElementById('microphoneBtn');
   var recordingText = document.getElementById('recordingText');
   var inputText = document.getElementById('inputText');
+  var autoSend = document.getElementById('enableAutosend');
   
   function sendMessage() {
       var message = inputText.value;
@@ -237,6 +238,10 @@
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       longPressTimer = null;
+    }
+
+    if (isRecording) {
+      stop_recoder();
     }
   });
   
@@ -346,6 +351,8 @@
                 // 这里可以添加代码将转写结果显示在页面上
                 if (inputText)
                   inputText.value = data.text;
+                if (autoSend.checked)
+                  sendMessage();
               } else if (data.error) {
                 console.error('转写失败: ' + data.error);
               }

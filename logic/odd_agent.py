@@ -138,6 +138,7 @@ class OddAgent:
         processor_class = self.load_tool_config(self, tool_config)
         processor_class.slot = self.tool_slots[tool_name]
         self.processors[tool_name] = processor_class
+        
         return self.processors[tool_name]
 
     def reset_current_tool(self):

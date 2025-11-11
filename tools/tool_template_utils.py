@@ -86,12 +86,12 @@ def llm_chat(message, user_input, chat_history=None):
     :param chat_history: 聊天记录
     :return: chatGPT回复
     """
-    logger.info('--------------------------------------------------------------------')
-    if config.DEBUG:
-        logger.info(f'prompt输入: {message}')
-    elif user_input:
-        logger.info(f'用户输入: {user_input}')  
-    logger.info('----------------------------------')
+    # logger.debug('--------------------------------------------------------------------')
+    # if config.DEBUG:
+    #     logger.debug(f'prompt输入: {message}')
+    # elif user_input:
+    #     logger.debug(f'用户输入: {user_input}')  
+    # logger.debug('----------------------------------')
     
     headers = {
         "Authorization": f"Bearer {config.API_KEY}",
@@ -118,18 +118,18 @@ def llm_chat(message, user_input, chat_history=None):
     }
 
     try:
-        logger.info(f'=================================LLM输入: {data}')
+        # logger.debug(f'=================================LLM输入: {data}')
         response = requests.post(config.GPT_URL, headers=headers, json=data, verify=False)
         if response.status_code == 200:
-            logger.info(f'=================================LLM输出: {response.json()}')
+            logger.debug(f'=================================LLM输出: {response.json()}')
             answer = response.json()["choices"][0]["message"]['content']
-            logger.info('--------------------------------------------------------------------')
+            logger.debug('--------------------------------------------------------------------')
             return answer
         else:
-            logger.error(f"=================================Error: {response.status_code}")
+            logger.error(f"调用大模型接口失败，请检查API_KEY是否配置正确\n=================================Error: {response.status_code}")
             return None
     except requests.RequestException as e:
-        logger.error(f"=================================Request error: {e}")
+        logger.error(f"调用大模型接口失败，请检查网络连接\n=================================Request error: {e}")
         return None
 
 

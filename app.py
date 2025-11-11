@@ -14,6 +14,29 @@ import werkzeug.utils
 from datetime import timedelta
 
 import odd_agent_config as config
+from logic.schedule_task import OddAgentScheduler
+
+import signal
+import sys
+
+# 全局保存线程引用
+schedule_task = None
+
+def signal_handler(sig, frame):
+    """处理终止信号，确保线程正确停止"""
+    print("收到终止信号，正在停止服务...")
+    
+    # 停止调度线程
+    if schedule_task:
+        schedule_task.stop()  # 假设我们已经实现了stop方法
+        schedule_task.join(timeout=5)  # 等待线程结束，最多等待5秒
+        print("调度线程已停止")
+    
+    sys.exit(0)
+
+# 注册信号处理
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 class CodeException(Exception):
 
@@ -75,6 +98,30 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 # 使用配置文件中的CORS设置
 CORS(app, origins="*", supports_credentials=True)
 
+
+def main():
+    global schedule_task
+    
+    # 创建并启动调度线程
+    schedule_task = OddAgentScheduler()
+    schedule_task.start()
+    print("调度线程已启动")
+    
+    try:
+        # 启动Flask应用
+        app.run(
+            host=config.BACKEND_HOST,
+            port=config.BACKEND_PORT,
+            debug=config.DEBUG
+        )
+    except Exception as e:
+        print(f"应用发生错误: {e}")
+    finally:
+        # 确保线程停止
+        if schedule_task and schedule_task.is_alive():
+            schedule_task.stop()
+            schedule_task.join(timeout=3)
+
 if __name__ == '__main__':
     print("===================================================================")
     asciiart = r"""
@@ -92,8 +139,4 @@ O   O  d   d  d   d  M   M  e        t    a     a
     print("===================================================================")
     print(f"http://{config.BACKEND_HOST}:{config.BACKEND_PORT}")
 
-    app.run(
-        host=config.BACKEND_HOST,
-        port=config.BACKEND_PORT,
-        debug=config.DEBUG
-    )
+    main()
