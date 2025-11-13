@@ -1,21 +1,22 @@
 @echo off
+chcp 65001
 
-REM 检查是否存在Python虚拟环境
-if exist venv (    
-    echo 激活Python虚拟环境...
+REM check whether venv exists
+if exist venv (
+    echo activate venv...
     call venv\Scripts\activate
 ) else (
-    echo Python虚拟环境不存在，使用系统Python...
+    echo Python venv does not exist, use system Python...
 )
 
-REM 安装依赖（如果需要）
+REM install project dependencies if requirements.txt exists
 if exist requirements.txt (
-    echo 安装项目依赖...
+    echo install project dependencies...
     pip install -r requirements.txt
 )
 
-REM 启动Flask应用
-echo 启动OddAgent服务...
+REM start flask app
+echo start OddAgent service...
 python app.py
 
 pause

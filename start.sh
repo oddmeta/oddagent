@@ -3,11 +3,11 @@
 # Check Python virtual environment
 if [ ! -d ".venv" ]; then
     echo "Creating Python virtual environment..."
-    python3 -m .venv .venv
+    python3 -m venv .venv
 fi
 if [ ! -f ".venv/bin/activate" ]; then
     echo "Activating Python virtual environment..."
-    python3 -m .venv .venv
+    python3 -m venv .venv
 fi
 # Activate virtual environment
 echo "Activating Python virtual environment..."
@@ -19,4 +19,4 @@ pip install -r requirements.txt
 
 # Start the service
 echo "Starting backend service..."
-python app.py
+python3 app.py
