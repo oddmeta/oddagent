@@ -146,6 +146,7 @@ def api_oddagent_chat():
         return jsonify({"error": "No question provided"}), 400
 
     response = odd_agent.process_oddagent_chat(question)
+    
     return jsonify({"answer": response})
 
 @bp.route(f'{config.API_PREFIX}/llm_chat', methods=['POST'])

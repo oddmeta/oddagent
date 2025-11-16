@@ -14,6 +14,7 @@ import requests
 import urllib3
 import odd_agent_config as config
 from odd_agent_logger import logger
+from logic.odd_agent_error import EM_ERR_LLM_APIKEY_ERROR, EM_ERR_LLM_CONNECTION_FAIL
 
 # 禁用SSL证书验证警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -28,6 +29,52 @@ def load_tool_templates(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
 
+def load_tool_config(tool_config_file):
+    """
+    从本地tool_templates.json文件加载工具配置
+    特殊处理global_variants通用字段，将其合并到每个工具的parameters中
+    """
+    all_tool_configs = {}
+    current_config = load_tool_templates(tool_config_file)
+    
+    # 提取全局变量
+    global_variants = current_config.get('global_variants', [])
+    agent_tool_list = current_config.get('agent_tool_list', [])
+    
+    for tool in agent_tool_list:
+        tool_name = tool.get('tool_name')
+        enabled = tool.get('enabled', False)
+
+        if not enabled:
+            continue
+
+        if tool_name and tool_name not in all_tool_configs:
+            # 复制工具的parameters
+            tool_parameters = tool.get('parameters', []).copy()
+            
+            # FIXME 会议平台API接口、参数、响应格式变来变去不统一，导致全局变量有点问题，暂时禁用。将global_variants合并到parameters前面
+            # merged_parameters = global_variants.copy() + tool_parameters
+            merged_parameters = tool_parameters
+
+            # 构建工具配置，添加tool_name字段
+            all_tool_configs[tool_name] = {
+                "tool_name": tool_name,  # 添加英文工具名称
+                "name": tool.get('name', ''),
+                "description": tool.get('description', ''),
+                "parameters": merged_parameters,
+                "enabled": tool.get('enabled', False),
+                "example": tool.get('example', '')
+            }
+
+    # 处理其他非agent_tool_list和global_variants的配置项
+    # for key, value in current_config.items():
+    #     if key not in ['global_variants', 'agent_tool_list'] and key not in all_tool_configs:
+    #         # 为其他配置项也添加tool_name字段
+    #         if isinstance(value, dict):
+    #             value['tool_name'] = key
+    #         all_tool_configs[key] = value
+
+    return all_tool_configs
 
 def load_all_tool_config():
     """
@@ -36,45 +83,20 @@ def load_all_tool_config():
     """
     all_tool_configs = {}
 
-    # 搜索目录下的所有json文件
-    for file_path in glob.glob("modules/**/*.json", recursive=True):
-        # logger.info(f"加载工具配置: {file_path}")
-        current_config = load_tool_templates(file_path)
+    if config.TOOL_CONFIG_FILE == "*":
+        # 搜索目录下的所有json文件
+        for file_path in glob.glob("modules/**/*.json", recursive=True):
+            # logger.info(f"加载工具配置: {file_path}")
+            all_tool_configs += load_tool_config(file_path)
+    else:
+        # 检查文件是否存在
+        import os
+        if not os.path.exists(config.TOOL_CONFIG_FILE):
+            raise FileNotFoundError(f"工具配置文件{config.TOOL_CONFIG_FILE}不存在")
         
-        # 提取全局变量
-        global_variants = current_config.get('global_variants', [])
-        # logger.debug(f"全局变量: {global_variants}")
-        # 处理工具列表
-        agent_tool_list = current_config.get('agent_tool_list', [])
-        # logger.debug(f"工具列表: {agent_tool_list}")
-        
-        for tool in agent_tool_list:
-            tool_name = tool.get('tool_name')
-            if tool_name and tool_name not in all_tool_configs:
-                # 复制工具的parameters
-                tool_parameters = tool.get('parameters', []).copy()
-                
-                # FIXME 科达会议平台API接口、参数、响应格式变来变去不统一，导致全局变量有点问题，暂时禁用。将global_variants合并到parameters前面
-                # merged_parameters = global_variants.copy() + tool_parameters
-                merged_parameters = tool_parameters
+        all_tool_configs = load_tool_config(config.TOOL_CONFIG_FILE)
 
-                # 构建工具配置，添加tool_name字段
-                all_tool_configs[tool_name] = {
-                    "tool_name": tool_name,  # 添加英文工具名称
-                    "name": tool.get('name', ''),
-                    "description": tool.get('description', ''),
-                    "parameters": merged_parameters,
-                    "enabled": tool.get('enabled', False),
-                    "example": tool.get('example', '')
-                }
-
-        # 处理其他非agent_tool_list和global_variants的配置项
-        for key, value in current_config.items():
-            if key not in ['global_variants', 'agent_tool_list'] and key not in all_tool_configs:
-                # 为其他配置项也添加tool_name字段
-                if isinstance(value, dict):
-                    value['tool_name'] = key
-                all_tool_configs[key] = value
+    logger.info(f"加载工具配置: {all_tool_configs}")
 
     return all_tool_configs
 
@@ -84,19 +106,14 @@ def llm_chat(message, user_input, chat_history=None):
     :param message: 要发送的消息
     :param user_input: 用户输入
     :param chat_history: 聊天记录
-    :return: chatGPT回复
+    :return: chatGPT回复, 错误码
     """
-    # logger.debug('--------------------------------------------------------------------')
-    # if config.DEBUG:
-    #     logger.debug(f'prompt输入: {message}')
-    # elif user_input:
-    #     logger.debug(f'用户输入: {user_input}')  
-    # logger.debug('----------------------------------')
-    
     headers = {
         "Authorization": f"Bearer {config.API_KEY}",
         "Content-Type": "application/json",
     }
+
+    error = 0
 
     # 构建消息列表
     messages = [{"role": "system", "content": config.SYSTEM_PROMPT}]
@@ -118,24 +135,25 @@ def llm_chat(message, user_input, chat_history=None):
     }
 
     try:
-        # logger.debug(f'=================================LLM输入: {data}')
+        logger.debug(f'=================================LLM输入: {data}')
         response = requests.post(config.GPT_URL, headers=headers, json=data, verify=False)
         if response.status_code == 200:
             logger.debug(f'=================================LLM输出: {response.json()}')
             answer = response.json()["choices"][0]["message"]['content']
             logger.debug('--------------------------------------------------------------------')
-            return answer
+            return answer, error
         else:
             logger.error(f"调用大模型接口失败，请检查API_KEY是否配置正确\n=================================Error: {response.status_code}")
-            return None
+            return None, EM_ERR_LLM_APIKEY_ERROR
     except requests.RequestException as e:
         logger.error(f"调用大模型接口失败，请检查网络连接\n=================================Request error: {e}")
-        return None
+        return None, EM_ERR_LLM_CONNECTION_FAIL
 
 
 def is_slot_fully_filled(json_data):
     """
     检查槽位是否完整填充
+    FIXME 暂未检查判断 required 字段是否为True，若为False，则槽位非必须填充
     :param json_data: 槽位参数JSON数据
     :return: 如果所有槽位都已填充，返回True；否则返回False
     """

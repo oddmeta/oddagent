@@ -212,7 +212,16 @@
       .then(response => response.json())
       .then(data => {
           // 显示返回的答案
-          chatOutput.innerHTML += '回答: ' + data.answer + '\n';
+          let displayAnswer = data.answer;
+          // 判断answer是否为JSON字符串并尝试解析
+          if (typeof displayAnswer === 'object' && displayAnswer !== null) {
+            // 如果已经是对象类型，直接转换为格式化的字符串
+            displayAnswer = JSON.stringify(displayAnswer, null, 2);
+          } else if (typeof displayAnswer === 'string') {
+
+          }
+          chatOutput.innerHTML += '回答: ' + displayAnswer + '\n';
+
           chatOutput.scrollTop = chatOutput.scrollHeight; // 滚动到底部
       })
       .catch(error => console.error('Error:', error));

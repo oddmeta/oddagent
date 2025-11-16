@@ -8,10 +8,11 @@ from tools.tool_executer import ToolExecuter
 from tools.tool_template_utils import get_slot_parameters_from_tool, llm_chat, get_dynamic_example
 from odd_agent_logger import logger
 import odd_agent_config as config
-from logic.api_request_composer import api_request_composer
-from logic.api_response_paser import api_response_parser
+# from logic.api_request_composer import api_request_composer
+# from logic.api_response_paser import api_response_parser
 
 from tools.tool_executer_meeting import MeetingExecuter, MeetingConfig
+from logic.odd_agent_error import EM_ERR_SLOT_PARSE_INVALID_SLOT_NAME, EM_ERR_SLOT_PARSE_EXCEPTION, odd_agent_err_name, odd_agent_err_desc
 
 class ToolExecuterImpl(ToolExecuter):
     def __init__(self, tool_config):
@@ -65,16 +66,12 @@ class ToolExecuterImpl(ToolExecuter):
             #     return result
             case 1:
                 result = {
-                    "code": 200, 
+                    "err_code": 0, 
                     "message": f"假装 [{self.tool_name}] API调用成功", 
-                    "data": 
-                    {
-                        "result": "成功", 
-                        "intent": f"{self.tool_name}",
-                        "slots": slots_data,
-                        "message": f"假装 [{self.tool_name}] API调用成功"
-                    }
+                    "slots": slots_data,
+                    "data": f"假装 [{self.tool_name}] API调用成功"
                 }
+
                 return result
             case 2:
                 match self.tool_name:
@@ -272,7 +269,7 @@ class ToolExecuterImpl(ToolExecuter):
                         result = self.meeting_executer.end_conference(self.meeting_executer.meeting_config.get_confid())
                         return result
                     case _:
-                        result = {"code": 500, "msg": "未知的tool_name", "data": "未知的tool_name"}
+                        result = {"err_code": 500, "msg": "未知的tool_name", "data": "未知的tool_name"}
                         return result
 
 
@@ -292,14 +289,20 @@ class ToolExecuterImpl(ToolExecuter):
             prompt = config.API_RESULT_PROMPT.format(api_result=json.dumps(data_part, ensure_ascii=False))
             
             # 调用AI处理结果
-            result = llm_chat(prompt, None, chat_history)
+            result, err_code = llm_chat(prompt, None, chat_history)
+
+            if err_code != 0:
+                logger.error("处理API结果时出错: %s", err_code)
+                result = {"err_code": EM_ERR_SLOT_PARSE_EXCEPTION, "msg": odd_agent_err_desc(EM_ERR_SLOT_PARSE_EXCEPTION), "data": "execute_result_parser"}
+                return result
             
             if result:
                 return result
             else:
                 logger.error("处理API结果时出错: %s", e)
-                return "抱歉，处理结果时出现错误，请稍后重试。"
+                return {"err_code": EM_ERR_SLOT_PARSE_INVALID_SLOT_NAME, "msg": odd_agent_err_desc(EM_ERR_SLOT_PARSE_INVALID_SLOT_NAME), "data": "execute_result_parser"}
                 
         except Exception as e:
             logger.error(f"处理API结果时出错: {e}")
-            return "抱歉，处理结果时出现错误，请稍后重试。"
+            return {"err_code": EM_ERR_SLOT_PARSE_EXCEPTION, "msg": odd_agent_err_desc(EM_ERR_SLOT_PARSE_EXCEPTION), "data": "execute_result_parser"}
+            
