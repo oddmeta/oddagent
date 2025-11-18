@@ -12,7 +12,7 @@ import re
 
 from odd_agent_config import NO_TOOL_RESPONSE
 from tools.tool_processor_impl import ToolProcessorImpl
-from tools.tool_template_utils import llm_chat, try_load_json_from_string
+from tools.tool_llm import llm_chat, try_load_json_from_string
 from tools import tool_prompts
 from odd_agent_logger import logger
 import odd_agent_config as config
@@ -145,7 +145,7 @@ class OddAgent:
             raise ValueError(f"未找到名为{tool_name}的工具配置")
 
         # 初始化槽位数据
-        from tools.tool_template_utils import get_slot_parameters_from_tool
+        from tools.tool_llm import get_slot_parameters_from_tool
         if tool_name not in self.tool_slots:
             self.tool_slots[tool_name] = get_slot_parameters_from_tool(tool_config["parameters"])
 
@@ -350,7 +350,9 @@ class OddAgent:
         
         if not self.current_purpose:
             response = self.generate_default_response(user_input)
-            self.chat_history.append({"role": "assistant", "content": response["data"]})
+            logger.warning(f"没有工具，生成回复: {response}")
+            # self.chat_history.append({"role": "assistant", "content": response.get("data", NO_TOOL_RESPONSE)})
+            self.chat_history.append({"role": "assistant", "content": NO_TOOL_RESPONSE})
             logger.info(f"process_oddagent_chat: self.chat_history={self.chat_history}")
 
             return response
@@ -395,9 +397,46 @@ class OddAgent:
                 response = self.generate_default_response(user_input)
 
         # 添加助手回复到聊天记录
-        self.chat_history.append({"role": "assistant", "content": response["data"]})
+        '''
+        大模型异常未实际解析意图示例
+        {
+            'id': 'chatcmpl-b479f2b5f015442ca567be8c141ebf4d', 
+            'object': 'chat.completion', 
+            'created': 1763434328, 
+            'model': 'qwen3-0.6b', 
+            'choices': [
+                {
+                    'index': 0, 
+                    'message': {
+                        'role': 'assistant', 
+                        'content': '您好，小科是会议助手，请问您有什么会议业务需要小科处理吗？', 
+                        'refusal': None, 
+                        'annotations': None, 
+                        'audio': None, 
+                        'function_call': None, 
+                        'tool_calls': [], 
+                        'reasoning_content': None
+                    }, 
+                    'logprobs': None, 
+                    'finish_reason': 'stop', 
+                    'stop_reason': None, 
+                    'token_ids': None
+                }
+            ], 
+            'service_tier': None, 
+            'system_fingerprint': None, 
+            'usage': {
+                'prompt_tokens': 243, 'total_tokens': 263, 'completion_tokens': 20, 'prompt_tokens_details': None
+            }, 
+            'prompt_logprobs':None, 'prompt_token_ids': None, 
+            'kv_transfer_params': None
+        }
+        '''
+        
+        self.chat_history.append({"role": "assistant", "content": response.get("data", NO_TOOL_RESPONSE)})
 
         logger.info(f"process_oddagent_chat: self.chat_history={self.chat_history}")
+        
         return response
         
     def _extract_continuous_digits(self,text):

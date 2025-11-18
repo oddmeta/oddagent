@@ -2,22 +2,35 @@
 DEBUG = True
 
 # LLM 模型参数
+
+GPT_URL = 'http://47.101.64.190:8010/v1/chat/completions'
+MODEL = 'qwen2.5-0.5b-instruct'
+
+GPT_URL = 'http://47.101.64.190:8009/v1/chat/completions'
+MODEL = 'qwen3-4b-instruct'
+
 GPT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
 MODEL = 'qwen3-30b-a3b-instruct-2507'
+
+GPT_URL = 'http://47.101.64.190:8011/v1/chat/completions'
+MODEL = 'qwen3-0.6b'
+
 API_KEY = 'sk-d8f0024e2d874a7dac8324538ecf2e6c'
+
 SYSTEM_PROMPT = 'You are a helpful assistant.'
 NO_TOOL_RESPONSE = "您好，小科是会议助手，请问您有什么会议业务需要小科处理吗？"                 # 无工具识别的默认响应
 API_RESULT_PROMPT = "以下是查询的结果，请向用户解释，禁止使用markdown：\n\n{api_result}："     # API结果处理提示词
 
-CHAT_HISTORY_COUNT = 3      # 聊天记录数量（发送给LLM的历史消息条数）
-API_PRETTY_RSP = False      # 是否调用LLM美化API响应，True-美化，False-不美化
-API_TIMEOUT = 10            # API请求超时时间（秒）
-API_RETRY_COUNT = 3         # API请求失败重试次数
-API_FAKE_API_RESULT = 1     # 模拟API结果，0-不模拟，1-模拟，2-自定义API
-API_FORCE_ONESHOT = 0       # 模拟API结果测试时，强制使用oneshot模式（一次请求必须同时返回intent+slots）
+LLM_MAX_HISTORY_MESSAGE = 3                     # 聊天记录数量（发送给LLM的历史消息条数）
+LLM_FORCE_NO_THINK = True                       # 是否强制不使用思考模式，True-强制不使用，False-根据场景自动判断
+API_PRETTY_RSP = False                          # 是否调用LLM美化API响应，True-美化，False-不美化
+API_TIMEOUT = 10                                # API请求超时时间（秒）
+API_RETRY_COUNT = 3                             # API请求失败重试次数
+API_FAKE_API_RESULT = 1                         # 模拟API结果，0-不模拟，1-模拟，2-自定义API
+API_FORCE_ONESHOT = 0                           # 模拟API结果测试时，强制使用oneshot模式（一次请求必须同时返回intent+slots）
 
 # 工具配置
-TOOL_CONFIG_FILE = 'modules/GAB/GAB.json'      # 工具配置文件路径，*表示使用modules目录下所有json文件作为工具配置
+TOOL_CONFIG_FILE = 'modules/GAB/GAB.json'       # 工具配置文件路径，*表示使用modules目录下所有json文件作为工具配置
 
 # Flask 配置
 FLASK_ENV = 'development'

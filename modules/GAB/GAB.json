@@ -127,7 +127,7 @@
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/POLL_INTERVAL",
       "tool_api_method": "POST",
-      "enabled": true
+      "enabled": false
     },
     {
       "tool_name": "ONLINE_MTS_POST",

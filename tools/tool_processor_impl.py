@@ -13,10 +13,10 @@ from tools import tool_prompts
 from tools.tool_processor import ToolProcessor
 from tools.tool_executer_impl import ToolExecuterImpl
 
-from tools.tool_template_utils import get_slot_parameters_from_tool, update_slot, format_name_value_for_logging, is_slot_fully_filled, llm_chat, \
+from tools.tool_llm import get_slot_parameters_from_tool, update_slot, format_name_value_for_logging, is_slot_fully_filled, llm_chat, \
      try_load_json_from_string, get_dynamic_example
 from tools.tool_datetime_utils import tool_get_current_date, tool_get_current_time
-from tools.tool_template_utils import get_slot_query_user_json, get_slot_update_json
+from tools.tool_llm import get_slot_query_user_json, get_slot_update_json
 from odd_agent_logger import logger
 import odd_agent_config as config
 from logic.odd_agent_error import EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, EM_ERR_INTENT_RECOGNITION_NO_TOOL3, odd_agent_err_desc

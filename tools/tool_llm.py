@@ -3,8 +3,8 @@
 @author: catherine wei
 @contact: EMAIL@contact: catherine@oddmeta.com
 @software: PyCharm 
-@file: tool_template_utils.py 
-@info: 工具模版工具
+@file: tool_llm.py 
+@info: LLM工具
 """
 
 import glob
@@ -121,19 +121,34 @@ def llm_chat(message, user_input, chat_history=None):
     # 添加聊天记录（如果提供）
     if chat_history:
         # 限制聊天记录数量
-        limited_history = chat_history[-config.CHAT_HISTORY_COUNT:]
+        limited_history = chat_history[-config.LLM_MAX_HISTORY_MESSAGE:]
         for msg in limited_history:
             messages.append(msg)
     
     # 添加当前消息
     messages.append({"role": "user", "content": f"{message}"})
 
+    # 关闭思考模式，对qwen3-0.6b模型无效，需要在chat_template中设置
+    # data = {
+    #     "model": config.MODEL,
+    #     "messages": messages,
+    #     "enable_thinking": False
+    # }
+    # data = {
+    #     "model": config.MODEL,
+    #     "messages": messages,
+    #     "extra_body":{"chat_template_kwargs": {"enable_thinking": False}}
+    # }
+
     data = {
         "model": config.MODEL,
         "messages": messages,
-        "enable_thinking": False
+        "chat_template_kwargs": {"enable_thinking": False}
     }
 
+    if config.LLM_FORCE_NO_THINK:
+        data["chat_template_kwargs"] = {"enable_thinking": False}
+    
     try:
         logger.debug(f'=================================LLM输入: {data}')
         response = requests.post(config.GPT_URL, headers=headers, json=data, verify=False)

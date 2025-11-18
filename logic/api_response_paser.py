@@ -1,19 +1,26 @@
 from odd_agent_logger import logger
 
-def api_response_parser(tool_name, tool_response):
+def api_response_parser(tool_name: str, tool_response):
     """
     解析工具响应，提取有用的信息
+    :param tool_name: 工具名称字符串
     :param tool_response: 工具响应字符串
     :return: 解析后的信息字典
     """
-    match tool_name:
-        case "create_meeting":
+    # case "create_meeting":
+    #     tool_response = create_meeting(tool_response)
+    # case "get_meeting_info":
+    #     tool_response = get_meeting_info(tool_response)
+    # case _:
+    #     logger.error(f"Unsupported tool name: {tool_name}")
+    #     return None
+    if tool_name == "create_meeting":
             tool_response = create_meeting(tool_response)
-        case "get_meeting_info":
-            tool_response = get_meeting_info(tool_response)
-        case _:
-            logger.error(f"Unsupported tool name: {tool_name}")
-            return None
+    elif tool_name == "get_meeting_info":
+        tool_response = get_meeting_info(tool_response)
+    else:
+        logger.error(f"Unsupported tool name: {tool_name}")
+        return None
     return tool_response
 
 def create_meeting(tool_response):
