@@ -66,10 +66,7 @@ class OddAgent:
 
         try:
             for template_key, template_info in self.tool_templates.items():
-
-
                 purpose_options[str(index)] = template_key
-
                 if isinstance(template_info, dict) and "description" in template_info:
                     purpose_description[str(index)] = template_info["description"]
                     index += 1
@@ -88,7 +85,7 @@ class OddAgent:
                 self.chat_history
             )
 
-            logger.debug(f'error: {error}, purpose_options: {purpose_options}, user_choice: {user_choice}')
+            logger.debug(f'llm_chat response, error: {error}, purpose_options: {purpose_options}, user_choice: {user_choice}')
             
             if error:
                 logger.error(f"LLM错误：{error}")
@@ -125,7 +122,7 @@ class OddAgent:
                     self.last_recognized_tool = ''  # 清除上次识别到的工具记录
                     self.is_slot_filling = False
                     logger.info("无法识别用户意图, 没有当前工具或不在补槽阶段，清空工具状态")
-                    return {'err_code': 0, 'msg': odd_agent_err_desc(EM_ERR_INTENT_RECOGNITION_NO_TOOL), 'status': EM_ERR_INTENT_RECOGNITION_NO_TOOL}
+                    return {'err_code': EM_ERR_INTENT_RECOGNITION_NO_TOOL, 'msg': odd_agent_err_desc(EM_ERR_INTENT_RECOGNITION_NO_TOOL), 'status': EM_ERR_INTENT_RECOGNITION_NO_TOOL}
 
         except Exception as e:
             logger.error(f"识别用户意图时出错：{e}")
@@ -160,6 +157,7 @@ class OddAgent:
         """清除当前工具，用于工具处理完成后"""
 
         # FIXME 已知chat_history没有正常清除，需要检查一下哪儿逻辑需要修改
+        self.chat_history.clear()
 
         self.current_purpose = ''
         self.last_recognized_tool = ''
@@ -286,7 +284,8 @@ class OddAgent:
 
                     logger.debug(f"工具: {self.current_purpose}, 必填槽位: {required_slots}")
                     # required_slots: [{'name': 'meeting_name', 'desc': '会议名称', 'type': 'string', 'required': True}]
-                    # response: {'err_code': 0, 'msg': 'success', 'data': '{"intent": "创建会议", "slots": [{"name": "meeting_name", "desc": "会议名称", "value": ""}, {"name": "meeting_side", "desc": "会议方/所属部门", "value": ""}]}'}
+                    # 错误的response: {'err_code': 0, 'msg': 'success', 'data': '{"intent": "创建会议", "slots": [{"name": "meeting_name", "desc": "会议名称", "value": ""}, {"name": "meeting_side", "desc": "会议方/所属部门", "value": ""}]}'}
+                    # 正确的response: {'err_code': 0, 'tool_name': 'SILENCE', 'message': '假装 [SILENCE] API调用成功', 'slots': {'enable': 0}, 'data': '假装 [SILENCE] API调用成功'}
 
                     for slot in required_slots:
                         # 如果response["data"]["slots"]不包含slot["name"]，或者包括但是value为空，说明缺少必填槽位
@@ -294,32 +293,35 @@ class OddAgent:
 
                         # 直接使用response中的slots字段
                         try:
-                            # 检查slots是列表还是字典格式
-                            if isinstance(response.get("slots"), list):
-                                # 如果是列表格式，查找匹配的槽位
-                                slot_found = False
-                                for s in response["slots"]:
-                                    if s.get("name") == slot["name"] and s.get("value"):
-                                        slot_found = True
-                                        break
-                                if not slot_found:
-                                    # 缺少必填槽位
-                                    logger.warning(f"工具: {self.current_purpose}, 缺少必填槽位 {slot['name']}")
-                                    return False
+                            if response.get("slots", {}).get(slot["name"]) and response["slots"][slot["name"]]:
+                                logger.debug(f"工具: {self.current_purpose}, 必填槽位 {slot['name']} 已填，值为: {response['slots'][slot['name']]}")
                             else:
-                                # 如果是字典格式，直接检查
-                                if slot["name"] not in response["slots"] or not response["slots"][slot["name"]]:
-                                    # 缺少必填槽位
-                                    logger.warning(f"工具: {self.current_purpose}, 缺少必填槽位 {slot['name']}")
-                                    return False
+                                # 缺少必填槽位
+                                logger.warning(f"工具: {self.current_purpose}, 缺少必填槽位 {slot['name']}")
+                            # # 检查slots是列表还是字典格式
+                            # if isinstance(response.get("slots"), list):
+                            #     # 如果是列表格式，查找匹配的槽位
+                            #     slot_found = False
+                            #     for s in response["slots"]:
+                            #         if s.get("name") == slot["name"] and s.get("value"):
+                            #             slot_found = True
+                            #             break
+                            #     if not slot_found:
+                            #         # 缺少必填槽位
+                            #         logger.warning(f"工具: {self.current_purpose}, 缺少必填槽位 {slot['name']}")
+                            #         return False
+                            # else:
+                            #     # 如果是字典格式，直接检查
+                            #     if slot["name"] not in response["slots"] or not response["slots"][slot["name"]]:
+                            #         # 缺少必填槽位
+                            #         logger.warning(f"工具: {self.current_purpose}, 缺少必填槽位 {slot['name']}")
+                            #         return False
                         except (KeyError, TypeError) as e:
                             logger.error(f"检查response槽位时出错: {e}, response: {response}")
                             return False
-     
-                        logger.debug(f"工具: {self.current_purpose}, 必填槽位 {slot['name']} 已填")
-                    
+                         
                     logger.debug(f"工具: {self.current_purpose}, 必填槽位全部已填")
-                    self.reset_current_tool()
+                    # self.reset_current_tool()
                     return True
                 else:
                     logger.warning(f"工具 {self.current_purpose} 返回错误码 {response.get('err_code')}")
@@ -332,11 +334,14 @@ class OddAgent:
         :param user_input: 用户输入
         :return: 处理结果
         """
+        logger.info("==============================================================")
+        logger.info("==============================================================")
         logger.info(f"process_oddagent_chat: {user_input}, self.current_purpose: {self.current_purpose}")
+        logger.info("==============================================================")
+        logger.info("==============================================================")
 
         # 添加用户输入到聊天记录
-        self.chat_history.append({"role": "user", "content": user_input})
-        logger.info(f"process_oddagent_chat: self.chat_history={self.chat_history}")
+        self._save_chat_history(role="user", msg=user_input)
 
         result = {}
 
@@ -344,16 +349,24 @@ class OddAgent:
         if not self.current_purpose:
             result = self.recognize_intent(user_input)
 
+        # 如果识别失败，返回错误码，并将聊天记录保存下来
         if "err_code" in result and result.get("err_code") != 0:
-            result = {"err_code": result.get("err_code"), "msg": odd_agent_err_desc(result.get("err_code")), "data": "recognize intent: {}".format(user_input)}
+            result = {"err_code": result.get("err_code"), "msg": odd_agent_err_desc(result.get("err_code")), "data": "用户输入: {}".format(user_input)}
+            err_code = result.get("err_code")
+            if err_code == EM_ERR_INTENT_RECOGNITION_NO_TOOL:
+                self._save_chat_history(role="assistant", msg=NO_TOOL_RESPONSE)
+                return result
+            elif err_code == EM_ERR_INTENT_RECOGNITION_NO_TOOL2:
+                self._save_chat_history(role="assistant", msg=NO_TOOL_RESPONSE)
+                return result
+        
             return result
         
         if not self.current_purpose:
             response = self.generate_default_response(user_input)
             logger.warning(f"没有工具，生成回复: {response}")
             # self.chat_history.append({"role": "assistant", "content": response.get("data", NO_TOOL_RESPONSE)})
-            self.chat_history.append({"role": "assistant", "content": NO_TOOL_RESPONSE})
-            logger.info(f"process_oddagent_chat: self.chat_history={self.chat_history}")
+            self._save_chat_history(role="assistant", msg=NO_TOOL_RESPONSE)
 
             return response
 
@@ -373,14 +386,16 @@ class OddAgent:
             if result.get("err_code") != 0:
                 # 移除最后一个用户输入
                 self.chat_history.pop()
-                result = {"err_code": result.get("err_code"), "msg": odd_agent_err_desc(result.get("err_code")), "data": "recognize intent: {}".format(user_input)}
+                result = {"err_code": result.get("err_code"), "msg": odd_agent_err_desc(result.get("err_code")), "data": "用户输入: {}".format(user_input)}
                 return result
             
             # 如果重新识别到工具，继续处理；否则生成无工具回复
             if self.current_purpose:
                 processor = self.load_processor(self.current_purpose)
                 response = processor.process(user_input, self.chat_history)
-                self.check_response_finished(response)
+                finished = self.check_response_finished(response)
+                if finished:
+                    self.reset_current_tool()
             else:
                 response = self.generate_default_response(user_input)
         else:
@@ -389,8 +404,12 @@ class OddAgent:
             if self.current_purpose in self.tool_templates:
                 processor = self.load_processor(self.current_purpose)
                 response = processor.process(user_input, self.chat_history)
-                
-                self.check_response_finished(response)
+
+                finished = self.check_response_finished(response)
+                if finished:
+                    self.reset_current_tool()
+                else:
+                    self._save_chat_history(role="assistant", msg=response.get("data", NO_TOOL_RESPONSE))
                 
             else:
                 # 工具不存在，生成无工具回复的情况
@@ -398,7 +417,7 @@ class OddAgent:
 
         # 添加助手回复到聊天记录
         '''
-        大模型异常未实际解析意图示例
+        qwen3-0.6b大模型异常未实际解析意图示例
         {
             'id': 'chatcmpl-b479f2b5f015442ca567be8c141ebf4d', 
             'object': 'chat.completion', 
@@ -433,12 +452,13 @@ class OddAgent:
         }
         '''
         
-        self.chat_history.append({"role": "assistant", "content": response.get("data", NO_TOOL_RESPONSE)})
 
-        logger.info(f"process_oddagent_chat: self.chat_history={self.chat_history}")
-        
         return response
-        
+    
+    def _save_chat_history(self, role, msg):
+        self.chat_history.append({"role": role, "content": msg})
+        logger.info(f"chat_history: {self.chat_history}")
+
     def _extract_continuous_digits(self,text):
         # 使用正则表达式找到所有连续的数字
         continuous_digits = re.findall(r'\d+', text)

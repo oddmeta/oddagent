@@ -101,7 +101,23 @@ CORS(app, origins="*", supports_credentials=True)
 
 def main():
     global schedule_task
-    
+
+    print("===================================================================")
+    asciiart = r"""
+ OOO   dddd   dddd   M   M  eeeee  ttttt   aaaaa
+O   O  d   d  d   d  MM MM  e        t    a     a
+O   O  d   d  d   d  M M M  eeee     t    aaaaaaa
+O   O  d   d  d   d  M   M  e        t    a     a
+ OOO   dddd   dddd   M   M  eeeee    t    a     a
+
+ ⭐️ Open Source: https://github.com/oddmeta/oddagent
+ 📖 Documentation: https://docs.oddmeta.net/
+        """
+
+    print(asciiart)
+    print("===================================================================")
+    print(f"http://{config.BACKEND_HOST}:{config.BACKEND_PORT}")
+
     # 创建并启动调度线程
     schedule_task = OddAgentScheduler()
     schedule_task.start()
@@ -123,20 +139,4 @@ def main():
             schedule_task.join(timeout=3)
 
 if __name__ == '__main__':
-    print("===================================================================")
-    asciiart = r"""
- OOO   dddd   dddd   M   M  eeeee  ttttt   aaaaa
-O   O  d   d  d   d  MM MM  e        t    a     a
-O   O  d   d  d   d  M M M  eeee     t    aaaaaaa
-O   O  d   d  d   d  M   M  e        t    a     a
- OOO   dddd   dddd   M   M  eeeee    t    a     a
-
- ⭐️ Open Source: https://github.com/oddmeta/oddagent
- 📖 Documentation: https://docs.oddmeta.net/
-        """
-
-    print(asciiart)
-    print("===================================================================")
-    print(f"http://{config.BACKEND_HOST}:{config.BACKEND_PORT}")
-
     main()

@@ -3,26 +3,37 @@ DEBUG = True
 
 # LLM 模型参数
 
-GPT_URL = 'http://47.101.64.190:8010/v1/chat/completions'
+GPT_URL = 'http://47.101.64.190:9001/v1/chat/completions'
 MODEL = 'qwen2.5-0.5b-instruct'
 
-GPT_URL = 'http://47.101.64.190:8009/v1/chat/completions'
-MODEL = 'qwen3-4b-instruct'
+GPT_URL = 'http://47.101.64.190:9002/v1/chat/completions'
+MODEL = 'qwen3-0.6b'
 
 GPT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
 MODEL = 'qwen3-30b-a3b-instruct-2507'
+LLM_TYPE = "Qwen3-30B-A3B-Instruct"
 
-GPT_URL = 'http://47.101.64.190:8011/v1/chat/completions'
-MODEL = 'qwen3-0.6b'
+
+GPT_URL = 'http://47.101.64.190:9003/v1/chat/completions'
+MODEL = 'qwen2.5-0.5b-lora'
+LLM_TYPE = "qwen2.5-0.5b-instruct"
+
+GPT_URL = 'http://47.101.64.190:9000/v1/chat/completions'
+MODEL = 'qwen3-4b-instruct'
+MODEL = 'Qwen3-4B-Instruct-2507'
+LLM_TYPE = "Qwen3-4B-Instruct"
 
 API_KEY = 'sk-d8f0024e2d874a7dac8324538ecf2e6c'
 
 SYSTEM_PROMPT = 'You are a helpful assistant.'
-NO_TOOL_RESPONSE = "您好，小科是会议助手，请问您有什么会议业务需要小科处理吗？"                 # 无工具识别的默认响应
+NO_TOOL_RESPONSE = "您好，我是一个会议助手，我还不会这项技能。我可以帮您创建会议，设置发言人，广播会场，主看会场，选看会场，或请求指定会场发言等。"                 # 无工具识别的默认响应
 API_RESULT_PROMPT = "以下是查询的结果，请向用户解释，禁止使用markdown：\n\n{api_result}："     # API结果处理提示词
 
 LLM_MAX_HISTORY_MESSAGE = 3                     # 聊天记录数量（发送给LLM的历史消息条数）
 LLM_FORCE_NO_THINK = True                       # 是否强制不使用思考模式，True-强制不使用，False-根据场景自动判断
+LLM_TEMPERATURE = 0                             # LLM温度参数，控制生成文本的随机性，值越小越确定，值越大越随机
+LLM_MAX_TOKEN = 2048                            # LLM最大token数，超过LLM_MAX_TOKEN限制的token数，LLM将截断输入
+
 API_PRETTY_RSP = False                          # 是否调用LLM美化API响应，True-美化，False-不美化
 API_TIMEOUT = 10                                # API请求超时时间（秒）
 API_RETRY_COUNT = 3                             # API请求失败重试次数
@@ -46,8 +57,8 @@ ODD_ASR_URL = 'https://oddasr.odmeta.net'
 ODD_ASR_TOKEN = 'your_odd_asr_token'
 
 # OddTTS 配置
-# ODD_TTS_URL = 'http://172.16.237.141:9002'
-ODD_TTS_URL = 'https://oddtts.odmeta.net'
+ODD_TTS_URL = 'http://172.16.237.141:9002'
+# ODD_TTS_URL = 'https://oddtts.odmeta.net'
 ODD_TTS_TOKEN = 'your_odd_tts_token'
 
 # 日志配置

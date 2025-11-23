@@ -143,6 +143,7 @@ def llm_chat(message, user_input, chat_history=None):
     data = {
         "model": config.MODEL,
         "messages": messages,
+        "temperature": config.LLM_TEMPERATURE,
         "chat_template_kwargs": {"enable_thinking": False}
     }
 
@@ -158,7 +159,7 @@ def llm_chat(message, user_input, chat_history=None):
             logger.debug('--------------------------------------------------------------------')
             return answer, error
         else:
-            logger.error(f"调用大模型接口失败，请检查API_KEY是否配置正确\n=================================Error: {response.status_code}")
+            logger.error(f"调用大模型接口失败，请检查API_KEY是否配置正确\n=================================Error: {response.status_code}, {response.text}")
             return None, EM_ERR_LLM_APIKEY_ERROR
     except requests.RequestException as e:
         logger.error(f"调用大模型接口失败，请检查网络连接\n=================================Request error: {e}")
@@ -259,6 +260,17 @@ def try_load_json_from_string(input_string):
     JSON抽取函数
     返回包含JSON对象的列表
     """
+
+    """
+    qwen3-30b-a3b-instruct-2507格式一：
+    {'choices': [{'finish_reason': 'stop', 'index': 0, 'message': {'content': '```json\n{"name": "enable", "desc": "静音开关：1表示关闭麦克风（静音），0表示开启麦克风（开麦）", "value": 1}\n```', 'role': 'assistant'}}], 'created': 1763542334, 'id': 'chatcmpl-31d41660-1da4-4b73-bf34-1d3802133e55', 'model': 'qwen3-30b-a3b-instruct-2507', 'object': 'chat.completion', 'usage': {'completion_tokens': 43, 'prompt_tokens': 277, 'total_tokens': 320}}
+    """
+
+    """
+    qwen3-30b-a3b-instruct-2507格式二：
+    {'choices': [{'finish_reason': 'stop', 'index': 0, 'message': {'content': '{"enable": 0}', 'role': 'assistant'}}], 'created': 1763541944, 'id': 'chatcmpl-34f2da20-bfa9-4df3-99ca-7b330987650c', 'model': 'qwen3-30b-a3b-instruct-2507', 'object': 'chat.completion', 'usage': {'completion_tokens': 6, 'prompt_tokens': 247, 'total_tokens': 253}}
+    """
+
     try:
         # 正则表达式假设JSON对象由花括号括起来
         matches = re.findall(r'\{.*?\}', input_string, re.DOTALL)

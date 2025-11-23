@@ -43,11 +43,22 @@ class ToolProcessorImpl(ToolProcessor):
         :param context: 对话的上下文
         :return: 处理结果
         """
-        logger.debug(f'用户输入：{user_input}')
+        logger.debug(f'用户输入：{user_input}, self.slot_template: {self.slot_template}')
 
         # 先检查本次用户输入是否有信息补充，保存补充后的结果   编写程序进行字符串value值diff对比，判断是否有更新
         slots_str = json.dumps(get_slot_update_json(self.slot_template), ensure_ascii=False)
-        message = tool_prompts.PROMPT_SLOT_UPDATE.format(self.tool_name, tool_get_current_date(), self.slot_dynamic_example, slots_str, user_input)
+
+        if config.LLM_TYPE == "qwen2.5-0.5b-instruct":
+            message = tool_prompts.PROMPT_SLOT_UPDATE.format(self.tool_name, 
+                                                            tool_get_current_date(), 
+                                                            self.slot_dynamic_example, 
+                                                            user_input)
+        else:
+            message = tool_prompts.PROMPT_SLOT_UPDATE_QWEN3.format(self.tool_name, 
+                                                            tool_get_current_date(), 
+                                                            self.slot_dynamic_example, 
+                                                            slots_str, 
+                                                            user_input)
 
         new_info_json_raw, result = llm_chat(message, user_input, context)
 
@@ -56,16 +67,22 @@ class ToolProcessorImpl(ToolProcessor):
             result = {"err_code": result, "msg": odd_agent_err_desc(result), "data": "slot_update"}
             return result
         
-        current_values = try_load_json_from_string(new_info_json_raw)
-
-        if current_values and isinstance(current_values[0], dict) and not ('name' in current_values[0] and 'value' in current_values[0]):
-            flat = current_values[0]
+        # 每个大模型返回的json数据结构，每个大模型返回的json数据结构不同，需要根据实际情况处理
+        # 例如：qwen3-30b-a3b-instruct-2507格式一：{'choices': [{'finish_reason': 'stop', 'index': 0, 'message': {'content': '```json\n{"name": "enable", "desc": "静音开关：1表示关闭麦克风（静音），0表示开启麦克风（开麦）", "value": 1}\n```', 'role': 'assistant'}}], 'created': 1763542334, 'id': 'chatcmpl-31d41660-1da4-4b73-bf34-1d3802133e55', 'model': 'qwen3-30b-a3b-instruct-2507', 'object': 'chat.completion', 'usage': {'completion_tokens': 43, 'prompt_tokens': 277, 'total_tokens': 320}}
+        new_info_json = try_load_json_from_string(new_info_json_raw)
+        
+        current_values = []
+        if new_info_json and isinstance(new_info_json[0], dict) and not ('name' in new_info_json[0] and 'value' in new_info_json[0]):
+            flat = new_info_json[0]
             current_values = [{"name": k, "value": v} for k, v in flat.items()]
+        else:
+            current_values = new_info_json
 
-        logger.debug('current_values: %s', current_values)
-        logger.debug('slot update before: %s', self.slot)
+        logger.debug(f'new_info_json_raw: {new_info_json_raw}')
+        logger.debug(f'current_values: {current_values}')
+        logger.debug(f'slot update before: {self.slot}')
         update_slot(current_values, self.slot)
-        logger.debug('slot update after: %s', self.slot)
+        logger.debug(f'slot update after: {self.slot}')
 
         if is_slot_fully_filled(self.slot):
             return self.process_complete_data(context)
@@ -91,10 +108,11 @@ class ToolProcessorImpl(ToolProcessor):
         # 准备槽位数据，使用英文键名
         slots_data = {}
         for slot in self.slot:
-            if slot['value']:
+            if slot['value'] != "":
                 slot_key = self._get_slot_key(slot['name'])
                 if slot_key:
                     slots_data[slot_key] = slot['value']
+        logger.debug(f'slots_data: {slots_data}')
         
         # 调用工具API
         api_result = self.tool_executer.execute(slots_data=slots_data)

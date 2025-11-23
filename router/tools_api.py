@@ -38,10 +38,10 @@ def update_transmit():
         
         if files:
             # 处理文件上传的情况
-            response = requests.post(asr_url, files=files)
+            response = requests.post(asr_url, files=files, verify=False)
         else:
             # 处理 JSON 数据的情况
-            response = requests.post(asr_url, json=data)
+            response = requests.post(asr_url, json=data, verify=False)
         
         # 使用make_response创建响应
         flask_response = make_response(response.content)
@@ -88,7 +88,8 @@ def proxy_asr_sentence():
                 files=files,
                 data=data,
                 params=request.args,
-                timeout=config.API_TIMEOUT
+                timeout=config.API_TIMEOUT,
+                verify=False
             )
         else:
             # 处理普通请求（JSON或其他）
@@ -98,7 +99,8 @@ def proxy_asr_sentence():
                 headers=headers,
                 data=request.get_data(),
                 params=request.args,
-                timeout=config.API_TIMEOUT
+                timeout=config.API_TIMEOUT,
+                verify=False
             )
         
         # 创建响应对象
