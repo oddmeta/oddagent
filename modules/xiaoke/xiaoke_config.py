@@ -1,0 +1,426 @@
+tool_config = {
+  "agent_api_base": "https://api.xiaoke.ai", 
+  "global_variants": [ 
+    {"name": "confid", "desc": "会议ID，必须是13位数字，作为会议操作的唯一标识符", "type": "string", "required": False}, 
+    {"name": "e164", "desc": "终端的E.164号，作为终端语音助手时使用", "type": "string", "required": False}
+  ], 
+  "agent_tool_list": [
+    {
+      "tool_name": "meeting_create",
+      "name": "创建会议",
+      "description": "创建会议服务。",
+      "parameters": [
+        {"name": "meeting_name", "desc": "会议名称", "type": "string", "required": True},
+      ],
+      "example": "输入：开个需求讨论会议。\n答：{ 'meeting_name': '需求讨论会议' }",
+      "test_instructions": [
+        "创建公安会议",
+        "开个周例会",
+        "现在开晨会",
+        "开个需求讨论会议。",
+        "建个晨会。"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_create", "slots": { "meeting_name": "公安会议" }},
+        { "tool_name": "meeting_create", "slots": { "meeting_name": "周例会" }},
+        { "tool_name": "meeting_create", "slots": { "meeting_name": "晨会" }},
+        { "tool_name": "meeting_create", "slots": { "meeting_name": "需求讨论会议" }},
+        { "tool_name": "meeting_create", "slots": { "meeting_name": "晨会" }}
+      ],
+
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_create",
+      "tool_api_method": "POST",
+      "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvo65ceo54#POST_/api/v1/mc/confs",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_end",
+      "name": "结束会议",
+      "description": "结束会议服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "结束会议",
+        "结会",
+        "把会议结了"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_end", "slots": { }},
+        { "tool_name": "meeting_end", "slots": { }},
+        { "tool_name": "meeting_end", "slots": { }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_end",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_leave",
+      "name": "退出会议",
+      "description": "退出会议服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "退出会议",
+        "退会",
+        "把会议退了"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_leave", "slots": { }},
+        { "tool_name": "meeting_leave", "slots": { }},
+        { "tool_name": "meeting_leave", "slots": { }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_leave",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_invite",
+      "name": "邀请参会人",
+      "description": "邀请参会人服务，可邀请指定会议的参会人。呼叫xxx，邀请一下xxx，把xxx邀请入会，呼一下xxx，拉一下xxx。",
+      "example": "JSON：[{'name': 'invitees', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：帮我邀请Jacky和Catherine\n答：{ 'invitees': 'Jacky,Catherine' }",
+      "parameters": [
+        {"name": "invitees", "desc": "参会人列表，逗号分隔", "type": "string", "required": True}
+      ],
+      "test_instructions": [
+        "邀请一下Catherine",
+        "邀请Jacky和Catherine",
+        "把会议邀请给Catherine",
+        "拉一下Jacky入会"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_invite", "slots": { "invitees": "Catherine" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky,Catherine" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "Catherine" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky" }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_invite",
+      "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#POST_/api/v1/vc/confs/{conf_id}/mts",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_dropout",
+      "name": "挂断参会人",
+      "description": "挂断参会人服务，可挂断指定会议的参会人。",
+      "example": "JSON：[{'name': 'participants', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：帮我挂断Jacky和Catherine\n答：{ 'participants': 'Jacky,Catherine' }",
+      "parameters": [
+        {"name": "participants", "desc": "参会人列表，逗号分隔", "type": "string", "required": True}
+      ],
+      "test_instructions": [
+        "挂断一下Catherine",
+        "挂断Jacky和Catherine",
+        "把Catherine挂断"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_dropout", "slots": { "participants": "Catherine" }},
+        { "tool_name": "meeting_dropout", "slots": { "participants": "Jacky,Catherine" }},
+        { "tool_name": "meeting_dropout", "slots": { "participants": "Catherine" }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_dropout",
+      "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#DELETE_/api/v1/vc/confs/{conf_id}/online_mts",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_open_camera",
+      "name": "打开摄像头",
+      "description": "打开摄像头服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "打开摄像头",
+        "打开我的摄像头",
+        "帮我打开摄像头",
+        "给我打开摄像头",
+        "开启摄像头",
+        "开启我的摄像头",
+        "帮我开启摄像头",
+        "给我开启摄像头",
+        "摄像头开一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }},
+        { "tool_name": "meeting_open_camera", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_camera",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_close_camera",
+      "name": "关闭摄像头",
+      "description": "关闭摄像头服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "关闭摄像头",
+        "关闭我的摄像头",
+        "帮我关闭摄像头",
+        "给我关闭摄像头",
+        "关闭摄像头",
+        "关闭我的摄像头",
+        "帮我关闭摄像头",
+        "给我关闭摄像头",
+        "摄像头关一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }},
+        { "tool_name": "meeting_close_camera", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_camera",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_open_microphone",
+      "name": "打开麦克风",
+      "description": "打开麦克风服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "打开麦克风",
+        "打开我的麦克风",
+        "帮我打开麦克风",
+        "给我打开麦克风",
+        "打开麦克风",
+        "打开我的麦克风",
+        "帮我打开麦克风",
+        "给我打开麦克风",
+        "麦克风开一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }},
+        { "tool_name": "meeting_open_microphone", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_microphone",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_close_microphone",
+      "name": "关闭麦克风",
+      "description": "关闭麦克风服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "关闭麦克风",
+        "关闭我的麦克风",
+        "帮我关闭麦克风",
+        "给我关闭麦克风",
+        "麦克风关一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_close_microphone", "slots": { }},
+        { "tool_name": "meeting_close_microphone", "slots": { }},
+        { "tool_name": "meeting_close_microphone", "slots": { }},
+        { "tool_name": "meeting_close_microphone", "slots": { }},
+        { "tool_name": "meeting_close_microphone", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_microphone",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "send_dual_stream",
+      "name": "发送双流",
+      "description": "发送双流服务。",
+      "parameters": [ ],
+      "test_instructions": [
+        "发送双流",
+        "发送我的双流",
+        "帮我发送双流",
+        "给我发送双流",
+        "双流开始"
+      ],
+      "test_answers": [
+        { "tool_name": "send_dual_stream", "slots": { }},
+        { "tool_name": "send_dual_stream", "slots": { }},
+        { "tool_name": "send_dual_stream", "slots": { }},
+        { "tool_name": "send_dual_stream", "slots": { }},
+        { "tool_name": "send_dual_stream", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/send_dual_stream",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "stop_dual_stream",
+      "name": "停止双流",
+      "description": "停止双流服务。",
+      "parameters": [
+      ],
+      "test_instructions": [
+        "停止双流",
+        "停止我的双流",
+        "帮我停止双流",
+        "给我停止双流",
+        "双流结束"
+      ],
+      "test_answers": [
+        { "tool_name": "stop_dual_stream", "slots": { }},
+        { "tool_name": "stop_dual_stream", "slots": { }},
+        { "tool_name": "stop_dual_stream", "slots": { }},
+        { "tool_name": "stop_dual_stream", "slots": { }},
+        { "tool_name": "stop_dual_stream", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/stop_dual_stream",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_open_subtitle",
+      "name": "打开同声字幕",
+      "description": "打开同声字幕服务。",
+      "parameters": [
+      ],
+      "test_instructions": [
+        "打开同声字幕",
+        "打开我的同声字幕",
+        "帮我打开同声字幕",
+        "给我打开同声字幕",
+        "同声字幕开一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_open_subtitle", "slots": { }},
+        { "tool_name": "meeting_open_subtitle", "slots": { }},
+        { "tool_name": "meeting_open_subtitle", "slots": { }},
+        { "tool_name": "meeting_open_subtitle", "slots": { }},
+        { "tool_name": "meeting_open_subtitle", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_subtitle",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_open_notes",
+      "name": "打开会议纪要",
+      "description": "打开会议纪要服务。",
+      "parameters": [],
+      "test_instructions": [
+        "打开会议纪要",
+        "打开我的会议纪要",
+        "帮我打开会议纪要",
+        "给我打开会议纪要",
+        "会议纪要开一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_open_notes", "slots": { }},
+        { "tool_name": "meeting_open_notes", "slots": { }},
+        { "tool_name": "meeting_open_notes", "slots": { }},
+        { "tool_name": "meeting_open_notes", "slots": { }},
+        { "tool_name": "meeting_open_notes", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_notes",
+      "tool_api_method": "POST",
+      "enabled": True
+    },  
+    {
+      "tool_name": "meeting_close_notes",
+      "name": "关闭会议纪要",
+      "description": "关闭会议纪要服务。",
+      "parameters": [],
+      "test_instructions": [
+        "关闭会议纪要",
+        "关闭我的会议纪要",
+        "帮我关闭会议纪要",
+        "给我关闭会议纪要",
+        "会议纪要关一下"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_close_notes", "slots": { }},
+        { "tool_name": "meeting_close_notes", "slots": { }},
+        { "tool_name": "meeting_close_notes", "slots": { }},
+        { "tool_name": "meeting_close_notes", "slots": { }},
+        { "tool_name": "meeting_close_notes", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_notes",
+      "tool_api_method": "POST", 
+      "enabled": True
+    }, 
+    {
+      "tool_name": "start_polling",
+      "name": "开始轮巡",
+      "description": "开始轮询服务。轮询一词也可以翻译为轮巡",
+      "parameters": [],
+      "test_instructions": [
+        "开始轮巡",
+        "开始我的轮巡",
+        "帮我开始轮巡",
+        "给我开始轮巡",
+        "轮巡开始"
+      ],
+      "test_answers": [
+        { "tool_name": "start_polling", "slots": { }},
+        { "tool_name": "start_polling", "slots": { }},
+        { "tool_name": "start_polling", "slots": { }},
+        { "tool_name": "start_polling", "slots": { }},
+        { "tool_name": "start_polling", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/start_polling",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "stop_polling",
+      "name": "停止轮巡",
+      "description": "停止轮询服务。轮询一词也可以翻译为轮巡",
+      "parameters": [],
+      "test_instructions": [
+        "停止轮巡",
+        "停止我的轮巡",
+        "帮我停止轮巡",
+        "给我停止轮巡",
+        "轮巡结束"
+      ],
+      "test_answers": [
+        { "tool_name": "stop_polling", "slots": { }},
+        { "tool_name": "stop_polling", "slots": { }},
+        { "tool_name": "stop_polling", "slots": { }},
+        { "tool_name": "stop_polling", "slots": { }},
+        { "tool_name": "stop_polling", "slots": { }}
+      ], 
+      "tool_api_url": "https://api.xiaoke.ai/api/stop_polling",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "chat_log", 
+      "name": "对话日志记录", 
+      "description": "对话日志记录，操作和日志内容。", 
+      "parameters": [
+        # {"name": "action", "desc": "操作", "type": "string", "required": True},
+        # {"name": "log_content", "desc": "日志内容", "type": "string", "required": True}
+      ], 
+      "test_instructions": [
+        "记录对话日志 操作: 加入 日志内容: Jacky加入了会议",
+        "记录对话日志 操作: 退出 日志内容: Catherine退出了会议",
+        "记录对话日志 操作: 发言 日志内容: CC发言了",
+        "记录对话日志 操作: 其他 日志内容: 其他操作"
+        ],
+      "test_answers": [
+        { "tool_name": "chat_log", "slots": { }},
+        { "tool_name": "chat_log", "slots": { }},
+        { "tool_name": "chat_log", "slots": { }},
+        { "tool_name": "chat_log", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/chat_log",
+      "tool_api_method": "POST", 
+      "enabled": False
+    }
+  ]
+}
