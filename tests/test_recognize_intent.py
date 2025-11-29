@@ -7,16 +7,16 @@ import json
 import requests
 import time
 import logging
-from io import StringIO
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-
-TEST_CONFIG_FILE = 'modules/GAB/GAB.json'               # 请确保此路径正确
-API_BASE_URL = 'http://localhost:5050/oddagent/chat'    # API地址
-
+TEST_CONFIG_FILE = '../modules/GAB/GAB_config.test.json'            # 请确保此路径正确
+TEST_CONFIG_FILE = '../modules/xiaoke/xiaoke_config.test.json'            # 请确保此路径正确
+API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'                # API地址
+API_BASE_URL = 'http://172.16.237.141:5050/oddagent/chat'                # API地址
 
 class TestItem:
     def __init__(self, tool_name: str, instruction: str):
@@ -45,15 +45,7 @@ def load_config(config_file):
             return json.load(f)
     except FileNotFoundError:
         logger.error(f"配置文件未找到: {config_file}")
-        # 尝试备用路径
-        alternate_path = 'tests/GAB语音指令意图配置.json'
-        logger.info(f"尝试备用路径: {alternate_path}")
-        try:
-            with open(alternate_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            logger.error(f"备用配置文件也未找到: {alternate_path}")
-            raise
+        raise
     except json.JSONDecodeError:
         logger.error(f"配置文件格式错误: {config_file}")
         raise
@@ -114,7 +106,7 @@ def compare_slotvalue(expected_slot_value_list, actual_slot_value_list):
                 
                 # 检查预期值是否包含在实际值中
                 if expected_str in actual_str:
-                    print(f"匹配成功: 预期值 '{expected_str}' 包含在实际值 '{actual_str}' 中")
+                    # logger.debug(f"匹配成功: 预期值 '{expected_str}' 包含在实际值 '{actual_str}' 中")
                     current_matched = True
                     used_indices.add(i)  # 标记此实际值已被使用
                     break
@@ -123,7 +115,7 @@ def compare_slotvalue(expected_slot_value_list, actual_slot_value_list):
             if not current_matched:
                 matched = False
                 error_msg = f"预期值 '{expected_str}' 未在任何实际值中找到匹配"
-                print(f"匹配失败: {error_msg}")
+                logger.error(f"匹配失败: {error_msg}")
                 break
     return matched, error_msg
 
@@ -166,21 +158,21 @@ def compare_slots(expected_slots, responsed_slots):
 
         # 2. 检查实际响应的槽位是否都存在且值匹配
         for expected_slot_name, expected_slot_value in expected_slots_dict.items():
-            print(f"expected_slot_name={expected_slot_name}, expected_slot_value={expected_slot_value}")
+            # print(f"expected_slot_name={expected_slot_name}, expected_slot_value={expected_slot_value}")
         
             # 处理值的类型转换（如果需要）
             for actual_slot_name, actual_slot_value in responsed_slots_dict.items():
-                print(f"actual_slot_name={actual_slot_name}, actual_slot_value={actual_slot_value}")
+                # print(f"actual_slot_name={actual_slot_name}, actual_slot_value={actual_slot_value}")
 
                 # 将slot值转换成list
                 actual_slot_value_list = str(actual_slot_value).split(',')
                 expected_slot_value_list = str(expected_slot_value).split(',')
-                print(f"actual_slot_value_list={actual_slot_value_list}, expected_slot_value_list={expected_slot_value_list}")
+                # print(f"actual_slot_value_list={actual_slot_value_list}, expected_slot_value_list={expected_slot_value_list}")
 
                 # 3. 判断两个list是否相等，其中expected_slot_value_list的值可能是 {"浙江","江苏"} ，而actual_slot_value_list的值可能是 {"浙江省厅","江苏省厅"}
                 matched, error_msg = compare_slotvalue(expected_slot_value_list, actual_slot_value_list)
 
-                logger.debug(f"compare_slotvalue: matched={matched}, error_msg={error_msg}")
+                # logger.debug(f"compare_slotvalue: matched={matched}, error_msg={error_msg}")
 
         if not matched:
             return False, f"槽位 '{slot_name}' 值不匹配，预期: {expected_value}, 响应: {actual_value}"
@@ -234,8 +226,6 @@ def process_intent_tests(config):
         if not test_answers:
             logger.warning(f"工具 {tool_name} 没有test_answers字段")
             continue
-
-
         
         # 遍历每个指令
         for index, instruction in enumerate(test_instructions, 1):
@@ -243,15 +233,17 @@ def process_intent_tests(config):
             test_item_list.append(test_item)
             count += 1
             
-            logger.info(f"测试指令 {index}/{len(test_instructions)}: {instruction}, test_answers[index]={test_answers[index-1]}")
+            # logger.info(f"测试指令 {index}/{len(test_instructions)}: {instruction}, test_answers[index]={test_answers[index-1]}")
 
             # 调用API
             test_item.start_time = time.time()
             response = api_oddagent_chat(instruction)
             test_item.end_time = time.time()
             
+            time_costs = test_item.end_time - test_item.start_time
+
             # 打印响应
-            logger.info(f"[{test_item.start_time:.6f} - {test_item.end_time:.6f}] 指令 '{instruction}' 的响应: {json.dumps(response, ensure_ascii=False, indent=2)}")
+            logger.debug(f"指令 '{instruction}' 的响应: {json.dumps(response, ensure_ascii=False, indent=2)}")
 
             ## 成功示例 
             # {
@@ -272,7 +264,7 @@ def process_intent_tests(config):
 
             try:
                 if response["data"]["answer"]["err_code"] != 0:
-                    print(f"意图失败！工具 {tool_name} 的指令 {index} 测试失败！")
+                    logger.error(f"意图失败！工具 {tool_name} 的指令 {index} 测试失败！")
                     test_results.failed += 1
                 else:
                     responsed_tool_name = response["data"]["answer"]["tool_name"]
@@ -290,38 +282,35 @@ def process_intent_tests(config):
 
                         responsed_slots = response["data"]["answer"]["slots"]
 
-                        logger.info(f"意图通过！工具 {tool_name} 的指令{index}={instruction}, 预期槽位：{expected_slots}, 实际槽位：{responsed_slots} ！")
+                        logger.info(f"[耗时：{time_costs:.2f}s], {index}/{len(test_instructions)}. 意图通过！工具 {tool_name} 的指令{index}={instruction}, 预期槽位：{expected_slots}, 实际槽位：{responsed_slots} ！")
 
                         is_match, error_msg = compare_slots(expected_slots, responsed_slots)
                         if is_match:
                             test_results.success_intent_and_slots += 1
                             test_item.success = True
-                            print(f"测试通过！工具 {tool_name} 的指令 {index} 测试成功！slots匹配！")
+                            # print(f"测试通过！工具 {tool_name} 的指令 {index} 测试成功！slots匹配！")
                         else:
                             test_item.success = False
-                            print(f"测试失败！工具 {tool_name} 的指令 {index} 测试失败！slots不匹配！expected: {expected_slots}, responsed: {responsed_slots}, error_msg: {error_msg}") 
+                            logger.error(f"测试失败！工具 {tool_name} 的指令 {index} 测试失败！slots不匹配！expected: {expected_slots}, responsed: {responsed_slots}, error_msg: {error_msg}") 
 
                     else:
                         test_item.success = False
-                        print(f"测试失败！工具 {tool_name}: {responsed_tool_name} 的指令 {index} 测试失败！")
+                        logger.error(f"测试失败！工具 {tool_name}: {responsed_tool_name} 的指令 {index} 测试失败！")
                         test_results.failed += 1
 
             except KeyError:
-                print(f"测试失败！工具 {tool_name} 的指令 {index} 响应格式错误！")
+                logger.error(f"测试失败！工具 {tool_name} 的指令 {index} 响应格式错误！")
                 test_results.failed += 1
             except Exception as e:
-                print(f"测试失败！工具 {tool_name} 的指令 {index} 测试失败！")
-                print(f"错误信息: {str(e)}")
+                logger.error(f"测试失败！工具 {tool_name} 的指令 {index} 测试失败！错误信息: {str(e)}")
                 test_results.failed += 1
 
-            print(f"\n=== 工具: {tool_name}, 指令 {index} ===")
-            print(f"指令: {instruction}")
-            print(f"响应: {json.dumps(response, ensure_ascii=False, indent=2)}")
-            print(f"测试结果:\n \
-总意图={test_results.total_intents}\n \
-总命令词={test_results.total_tests}\n \
-意图通过={test_results.success_intent}/{count}，{test_results.success_intent/count:.2%} % \n \
-意图槽位通过={test_results.success_intent_and_slots}/{count}，{test_results.success_intent_and_slots/count:.2%} % \n \
+            logger.info(f"=== 工具: {tool_name}, 指令 {index}: {instruction}")
+            logger.debug(f"响应: {json.dumps(response, ensure_ascii=False, indent=2)}")
+            logger.info(f"测试结果: \
+总意图={test_results.total_intents}, 总命令词={test_results.total_tests}, \
+意图通过={test_results.success_intent}/{count}，{test_results.success_intent/count:.2%} % , \
+意图槽位通过={test_results.success_intent_and_slots}/{count}，{test_results.success_intent_and_slots/count:.2%} %, \
 测试失败={test_results.failed}")
 
             # 睡3秒，避免对服务器压力过大
@@ -366,7 +355,7 @@ def run_test():
     try:
         # 加载配置
         config = load_config(TEST_CONFIG_FILE)
-        logger.info(f"成功加载配置文件，包含 {len(config.get('agent_tool_list', []))} 个工具")
+        logger.info(f"成功加载配置文件: 包含 {len(config.get('agent_tool_list', []))} 个工具")
         
         # 处理测试意图
         process_intent_tests(config)

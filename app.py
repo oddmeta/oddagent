@@ -12,12 +12,12 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import werkzeug.utils
 from datetime import timedelta
+import signal
+import sys
 
 import odd_agent_config as config
 from logic.schedule_task import OddAgentScheduler
-
-import signal
-import sys
+from logic.odd_agent_error import OddException, from_exc, odd_exception_handler
 
 # 全局保存线程引用
 schedule_task = None
@@ -38,56 +38,14 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-class CodeException(Exception):
 
-    def __init__(self, error_code, error_desc):
-        super().__init__()
-        self.error_code = error_code
-        self.error_desc = error_desc
-
-    def __str__(self):
-        return "%d - %s" % (self.error_code, self.error_desc)
-
-    def __unicode__(self):
-        return u"%d - %s" % (self.error_code, self.error_desc)
-
-class Result:
-    def __init__(self):
-        self._result = {}
-
-    def set_code(self, error_code):
-        self._result['error_code'] = error_code
-
-    def set_msg(self, error_desc):
-        self._result['error_desc'] = error_desc
-
-    def set_data(self, data):
-        self._result['data'] = data
-
-    @property
-    def result(self):
-        return self._result
-
-
-def from_exc(exc):
-    r = Result()
-    r.set_code(exc.error_code)
-    r.set_msg(exc.error_desc)
-    return r.result
-
-class ResultException(CodeException):
-    """异常返回"""
-    def __init__(self, error_code, error_desc):
-        super(ResultException, self).__init__(error_code, error_desc)
-def handler(exc):
-    return jsonify(from_exc(exc))
 
 # register blueprints
 def register_blueprints(new_app, path):
     for name in werkzeug.utils.find_modules(path):
         m = werkzeug.utils.import_string(name)
         new_app.register_blueprint(m.bp)
-    new_app.errorhandler(CodeException)(handler)
+    new_app.errorhandler(OddException)(odd_exception_handler)
     return new_app
 
 app = Flask(__name__, static_url_path='')

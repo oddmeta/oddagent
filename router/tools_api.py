@@ -1,22 +1,20 @@
 
 import uuid
+import time
+import requests
 from threading import Lock
 from flask import request, jsonify, Response, Blueprint, make_response
-import requests
 
 import odd_agent_config as config
 
 from logic.odd_agent import OddAgent
 from odd_agent_logger import logger
-
-from tools.tool_llm import load_tool_config, load_tool_templates, try_load_json_from_string, \
-    llm_chat, get_dynamic_example, get_slot_parameters_from_tool, get_slot_query_user_json, get_slot_update_json, \
-    is_slot_fully_filled, update_slot, load_all_tool_config
+from modules.module_tool import load_all_tool_config
 
 bp = Blueprint('oddapi', __name__, url_prefix='')
 
 # 实例化OddAgent
-odd_agent = OddAgent(load_all_tool_config())
+odd_agent = OddAgent(load_all_tool_config(config.TOOL_CONFIG_FILE_EXT))
 
 # 会话存储 - 生产环境应使用Redis或数据库
 sessions = {}
@@ -151,7 +149,10 @@ def api_oddagent_chat():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
+    time_start = time.time()
     response = odd_agent.process_oddagent_chat(question)
+    time_end = time.time()
+    logger.info(f"api_oddagent_chat: {question}, time_cost: {time_end - time_start}, response: {response}")
     
     return jsonify({"answer": response})
 

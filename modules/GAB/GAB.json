@@ -7,6 +7,9 @@
       "tool_name": "INSTANT_MEETING",
       "name": "创建会议",
       "description": "立即创建会议。",
+      "parameters": [
+        { "name": "meeting_name", "desc": "会议名称", "type": "string", "required": false }
+      ],
       "example": "输入：江苏省公安厅创建公安会议\n答：{ 'meeting_name': '公安会议' }",
       "test_instructions": [
         "创建公安会议",
@@ -18,18 +21,22 @@
         { "tool_name": "INSTANT_MEETING", "slots": { "meeting_name": "周例会" }},
         { "tool_name": "INSTANT_MEETING", "slots": { "meeting_name": "晨会" }}
       ],
-      "parameters": [
-        { "name": "meeting_name", "desc": "会议名称", "type": "string", "required": false }
-      ],
       "tool_api_url": "https://api.xiaoke.ai/api/INSTANT_MEETING",
       "tool_api_method": "POST",
       "enabled": true
     },
     {
       "tool_name": "SILENCE",
-      "name": "全场静音控制",
-      "description": "控制会议中所有麦克风的静音与取消静音。",
-      "example": "输入：关闭全场麦克风\n答：{ 'enable': 1 }\n输入：打开全场麦克风\n答：{ 'enable': 0 }",
+      "name": "全场麦克风静音控制",
+      "custom_system_prompt": "你是一个专业的语音助手，你的任务是根据用户的指令，控制会议中所有麦克风的静音与取消静音。\n返回严格按照以下格式:{ 'enabled': int } }",
+      "description": "关闭或者开启会议中所有人的麦克风，控制会议中所有麦克风的静音与取消静音。",
+      "parameters2": [
+        { "name": "enabled", "desc": "静音开关：1表示全场静音，也即关闭麦克风/闭麦；0表示取消静音，也即打开麦克风/开麦。", "type": "number", "required": true }
+      ],
+      "parameters": [
+        { "name": "enabled", "desc": "静音开关：1表示全场静音，也即关闭麦克风/闭麦；0表示取消静音，也即打开麦克风/开麦。", "type": "number", "required": true }
+      ],
+      "example": "'enabled':1代表静音或者关闭麦克风，0代表解除静音或开启。\n\n输入：关闭全场麦克风\n答：{ 'enabled': 1 }\n输入：打开全场麦克风\n答：{ 'enabled': 0 }",
       "test_instructions": [
         "关闭全场麦克风",
         "关闭全场全体麦克风",
@@ -49,25 +56,22 @@
         "全开麦克风"
       ],
       "test_answers": [
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 1 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }},
-        { "tool_name": "SILENCE", "slots": { "enable": 0 }}
-      ],
-      "parameters": [
-        { "name": "enable", "desc": "静音开关：1表示全场静音，0表示取消静音（开麦）", "type": "number", "required": true }
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 1 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }},
+        { "tool_name": "SILENCE", "slots": { "enabled": 0 }}
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/SILENCE",
       "tool_api_method": "POST",
@@ -76,7 +80,10 @@
     {
       "tool_name": "SPEAKER",
       "name": "设置发言人",
-      "description": "请xxx发言, 广播xxx, 将xxx设置为发言人,选看xxx,画面给xxx,主看xxx。",
+      "description": "请xxx发言, 广播xxx, 将xxx设置为发言人,选看xxx,画面给xxx,主看xxx。\n其中: xxx 为发言人的名称，通常是为省、直辖市一级的省厅、公安厅，如湖南、湖南省厅、湖南公安厅等。",
+      "parameters": [
+        { "name": "mt", "desc": "发言人会场名称", "type": "string", "required": true }
+      ],
       "example": "输入：广播浙江\n答：{ 'mt': '浙江' }\n输入：请江苏省公安厅发言\n答：{ 'mt': '江苏省公安厅' }",
       "test_instructions": [
         "广播江苏省公安厅",
@@ -117,9 +124,6 @@
         { "tool_name": "SPEAKER", "slots": { "mt": "湖南省公安厅" }},
         { "tool_name": "SPEAKER", "slots": { "mt": "江苏省公安厅" }}
       ],
-      "parameters": [
-        { "name": "mt", "desc": "发言人会场名称", "type": "string", "required": true }
-      ],
       "tool_api_url": "https://api.xiaoke.ai/api/SPEAKER",
       "tool_api_method": "POST",
       "enabled": true
@@ -128,7 +132,10 @@
       "tool_name": "POLL",
       "name": "会议轮询控制",
       "description": "控制会议轮询功能，可开启或结束会场轮询。",
-      "example": "输入：开始轮询\n答：{ 'enable': 1 }\n输入：结束轮询\n答：{ 'enable': 0 }",
+      "parameters": [
+        { "name": "enabled", "desc": "1 表示开始轮询，0 表示结束轮询", "type": "number", "required": true }
+      ],
+      "example": "输入：开始轮询\n答：{ 'enabled': 1 }\n输入：结束轮询\n答：{ 'enabled': 0 }",
       "test_instructions": [
         "开始轮询",
         "轮询开始",
@@ -151,28 +158,25 @@
         "把轮询结束掉"
       ],
       "test_answers": [
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 1 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }},
-        { "tool_name": "POLL", "slots": { "enable": 0 }}
-      ],
-      "parameters": [
-        { "name": "enable", "desc": "1 表示开始轮询，0 表示结束轮询", "type": "number", "required": true }
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 1 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }},
+        { "tool_name": "POLL", "slots": { "enabled": 0 }}
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/POLL",
       "tool_api_method": "POST",
@@ -182,6 +186,9 @@
       "tool_name": "POLL_INTERVAL",
       "name": "设置会议轮询间隔",
       "description": "控制会议轮询（轮巡）间隔时间。",
+      "parameters": [
+        { "name": "poll_interval", "desc": "轮询/轮巡间隔时间，单位秒", "type": "number", "required": true }
+      ],
       "example": "输入：轮询间隔5秒\n答：{ 'poll_interval': 5 }",
       "test_instructions": [
         "轮询间隔时间5秒",
@@ -207,9 +214,6 @@
         { "tool_name": "POLL_INTERVAL", "slots": { "poll_interval": 10 }},
         { "tool_name": "POLL_INTERVAL", "slots": { "poll_interval": 5 }}
       ],
-      "parameters": [
-        { "name": "poll_interval", "desc": "轮询/轮巡间隔时间，单位秒", "type": "number", "required": true }
-      ],
       "tool_api_url": "https://api.xiaoke.ai/api/POLL_INTERVAL",
       "tool_api_method": "POST",
       "enabled": false
@@ -218,6 +222,9 @@
       "tool_name": "ONLINE_MTS_POST",
       "name": "呼叫会场",
       "description": "呼叫xxx，邀请xxx加入会议。",
+      "parameters": [
+        { "name": "mt", "desc": "呼叫的会场列表，逗号分隔", "type": "string", "required": true }
+      ],
       "example": "输入：呼叫江苏省厅和浙江省厅\n答：{ 'mt': '江苏省厅,浙江省厅' }",
       "test_instructions": [
         "呼叫浙江省厅",
@@ -240,14 +247,6 @@
         { "tool_name": "ONLINE_MTS_POST", "slots": { "mt": "江苏省厅,浙江省厅" }},
         { "tool_name": "ONLINE_MTS_POST", "slots": { "mt": "河北省厅" }}
       ],
-      "parameters": [
-        {
-          "name": "mt",
-          "desc": "呼叫的会场列表，逗号分隔",
-          "type": "string",
-          "required": true
-        }
-      ],
       "tool_api_url": "https://api.xiaoke.ai/api/ONLINE_MTS_POST",
       "tool_api_method": "POST",
       "enabled": true
@@ -255,8 +254,11 @@
     {
       "tool_name": "MTS_DELETE",
       "name": "挂断或移除会场",
-      "description": "挂断xxx，断开xxx的连接, 结束xxx的通话, 移除xxx, 请离xxx, 清退xxx, 踢掉xxx，或将xxx从会议中删除、断开、下线。",
+      "description": "挂断xxx，断开xxx的连接, 结束xxx的通话, 结束xxx的接入, 终止xxx的接入, 结束xxx的呼叫，移除xxx, 请离xxx, 清退xxx, 踢掉xxx，或将xxx从会议中删除、断开、下线。",
       "description_qw2.5": "挂断指定会场，或将其从会议中清退、移除、删除、断开、下线。",
+      "parameters": [
+        {"name": "mt", "desc": "要挂断或删除的会场列表，逗号分隔", "type": "string", "required": true }
+      ],
       "example": "输入：挂断江苏和浙江省厅\n答：{ 'mt': '江苏省厅,浙江省厅' }",
       "test_instructions": [
         "挂断江苏和浙江省公安厅",
@@ -308,14 +310,6 @@
         { "tool_name": "MTS_DELETE", "slots": { "mt": "江西省厅" }},
         { "tool_name": "MTS_DELETE", "slots": { "mt": "河北省厅" }},
         { "tool_name": "MTS_DELETE", "slots": { "mt": "江苏省厅" }}
-      ],
-      "parameters": [
-        {
-          "name": "mt",
-          "desc": "要挂断或删除的会场列表，逗号分隔",
-          "type": "string",
-          "required": true
-        }
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/MTS_DELETE",
       "tool_api_method": "POST",

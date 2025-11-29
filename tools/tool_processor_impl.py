@@ -13,18 +13,19 @@ from tools import tool_prompts
 from tools.tool_processor import ToolProcessor
 from tools.tool_executer_impl import ToolExecuterImpl
 
-from tools.tool_llm import get_slot_parameters_from_tool, update_slot, format_name_value_for_logging, is_slot_fully_filled, llm_chat, \
-     try_load_json_from_string, get_dynamic_example
+from modules.module_tool import get_slot_parameters_from_tool, update_slot, format_name_value_for_logging, is_slot_fully_filled, \
+     try_load_json_from_string, get_dynamic_example, get_slot_query_user_json, get_slot_update_json
 from tools.tool_datetime_utils import tool_get_current_date, tool_get_current_time
-from tools.tool_llm import get_slot_query_user_json, get_slot_update_json
+from tools.tool_llm import llm_chat
 from odd_agent_logger import logger
 import odd_agent_config as config
-from logic.odd_agent_error import EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, EM_ERR_INTENT_RECOGNITION_NO_TOOL3, odd_agent_err_desc
+from logic.odd_agent_error import EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, EM_ERR_INTENT_RECOGNITION_NO_TOOL3, odd_err_desc
 
 class ToolProcessorImpl(ToolProcessor):
     def __init__(self, tool_config):
         parameters = tool_config["parameters"]
         self.tool_config = tool_config
+        self.tool = tool_config["tool_name"]
         self.tool_name = tool_config["name"]
         self.description = tool_config["description"]
         self.slot_template = get_slot_parameters_from_tool(parameters)
@@ -43,7 +44,7 @@ class ToolProcessorImpl(ToolProcessor):
         :param context: 对话的上下文
         :return: 处理结果
         """
-        logger.debug(f'用户输入：{user_input}, self.slot_template: {self.slot_template}')
+        logger.debug(f'用户输入：{user_input}, self.slot_template: {self.slot_template}， self.slot_dynamic_example: {self.slot_dynamic_example}')
 
         # 先检查本次用户输入是否有信息补充，保存补充后的结果   编写程序进行字符串value值diff对比，判断是否有更新
         slots_str = json.dumps(get_slot_update_json(self.slot_template), ensure_ascii=False)
@@ -60,11 +61,17 @@ class ToolProcessorImpl(ToolProcessor):
                                                             slots_str, 
                                                             user_input)
 
+        # message = tool_prompts.PROMPT_SLOT_UPDATE_QWEN3.format(self.tool_name, 
+        #                                                 tool_get_current_date(), 
+        #                                                 self.slot_dynamic_example, 
+        #                                                 slots_str, 
+        #                                                 user_input)
+
         new_info_json_raw, result = llm_chat(message, user_input, context)
 
         if result != 0:
             logger.error(f"调用LLM API时出现错误：{result}")
-            result = {"err_code": result, "msg": odd_agent_err_desc(result), "data": "slot_update"}
+            result = {"err_code": result, "msg": odd_err_desc(result), "data": "slot_update"}
             return result
         
         # 每个大模型返回的json数据结构，每个大模型返回的json数据结构不同，需要根据实际情况处理
@@ -102,7 +109,7 @@ class ToolProcessorImpl(ToolProcessor):
         tool_name = self._get_tool_name()
         if not tool_name:
             logger.error(f"无法找到工具 '{self.tool_name}' 的配置信息。")
-            result = {"err_code": EM_ERR_INTENT_RECOGNITION_NO_TOOL3, "msg": odd_agent_err_desc(EM_ERR_INTENT_RECOGNITION_NO_TOOL3), "data": "slot_update"}
+            result = {"err_code": EM_ERR_INTENT_RECOGNITION_NO_TOOL3, "msg": odd_err_desc(EM_ERR_INTENT_RECOGNITION_NO_TOOL3), "data": "slot_update"}
             return result
         
         # 准备槽位数据，使用英文键名
@@ -120,7 +127,7 @@ class ToolProcessorImpl(ToolProcessor):
         # 处理API结果
         if "error" in api_result:
             logger.error(f"调用API时出现错误：{api_result['error']}")
-            result = {"err_code": EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, "msg": odd_agent_err_desc(EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR), "data": "slot_update"}
+            result = {"err_code": EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, "msg": odd_err_desc(EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR), "data": "slot_update"}
             return result
         
         if config.API_PRETTY_RSP:
@@ -147,17 +154,17 @@ class ToolProcessorImpl(ToolProcessor):
         logger.debug(f'process_more_slot_data: 工具名称={self.tool_name}')
         
         slots_str = json.dumps(get_slot_query_user_json(self.slot), ensure_ascii=False)
-        # message = tool_prompts.PROMPT_QUERY_SLOT.format(self.tool_name, self.tool_name, self.description, slots_str, self.slot_template, user_input)
-        message = tool_prompts.PROMPT_QUERY_SLOT_USER.format(self.tool_name, self.tool_name, self.description, slots_str, self.slot_template, user_input)
+        # message = tool_prompts.PROMPT_QUERY_SLOT.format(self.tool, self.tool_name, self.description, slots_str, self.slot_template, user_input)
+        message = tool_prompts.PROMPT_QUERY_SLOT_USER.format(self.tool, self.tool_name, self.description, slots_str, self.slot_template, user_input)
 
         result, err_code = llm_chat(message, user_input, context)
 
         if err_code != 0:
             logger.error(f"调用LLM API时出现错误：{err_code}")
-            result = {"err_code": err_code, "msg": odd_agent_err_desc(err_code), "data": "slot_query"}
+            result = {"err_code": err_code, "tool_name": self.tool, "msg": odd_err_desc(err_code), "data": "slot_query"}
             return result
         
-        result = {"err_code": 0, "msg": "success", "data": result}
+        result = {"err_code": 0, "tool_name": self.tool, "msg": "success", "data": result}
         logger.debug(f'process_more_slot_data: 响应结果: {result}')
 
         return result
