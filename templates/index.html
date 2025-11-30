@@ -74,7 +74,7 @@
   <div class="container-fluid">
     <div class="row mb-2">
       <div class="text-center col-12">
-        <h1>OddAgent Demo</h1>
+        <h1>小科语音助手 Demo</h1>
       </div>
     </div>
   </div><!-- /.container-fluid -->
@@ -86,10 +86,16 @@
 
   <div class="row justify-content-center"> <!-- 添加row容器并使用justify-content-center类 -->
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="card card-primary card-outline">
 
         <div class="card-header">
+          <h3 class="card-title">语音输入</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
         </div>
         <!-- /.card-header -->
 
@@ -150,6 +156,34 @@
 
       </div>
     </div>
+    <div class="col-md-2"> 
+      {% for skill in skills %}
+      <div class="card card-primary card-outline"> 
+        <div class="card-header active">
+          <h3 class="card-title">技能：{{skill.file_name}}</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body"> 
+          {% for item in skill.agent_tool_list %}
+          <div class="list-group" style="background-color: #3e0af9;"> 
+            <a href="#" class="list-group-item list-group-item-action text-center" onclick="toggleInstructions('instructions-{{item.tool_name}}'); return false;"><b>【{{item.name}}】</b></a>
+            <div id="instructions-{{item.tool_name}}" class="list-group bg-white" style="display: none;">
+              {% for instruct in item.test_instructions  %}
+              <a href="#" class="list-group-item list-group-item-action text-center" onclick="testInstruct('{{instruct}}'); return false;" style="color: #a8a8a8 !important;">{{instruct}}</a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
 
   </div>
   <!-- /.container-fluid -->
@@ -188,6 +222,17 @@
   var recordingText = document.getElementById('recordingText');
   var inputText = document.getElementById('inputText');
   var autoSend = document.getElementById('enableAutosend');
+  
+  function testInstruct(instruction) { 
+    inputText.value = instruction;
+  }
+
+  function toggleInstructions(elementId) {
+    var element = document.getElementById(elementId);
+    if (element) {
+      element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';
+    }
+  }
   
   function sendMessage() {
       var message = inputText.value;

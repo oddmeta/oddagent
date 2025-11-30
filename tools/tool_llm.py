@@ -69,7 +69,8 @@ def llm_chat(message, user_input, chat_history=None):
     }
 
     if config.LLM_FORCE_NO_THINK:
-        data["chat_template_kwargs"] = {"enable_thinking": False}
+        data["chat_template_kwargs"] = {"enable_thinking": False} # 关闭思考模式，对qwen3-0.6b模型无效，需要在chat_template中设置
+        data["enable_thinking"] =  False  # 兼容qwen3-0.6b, qwen3-30b-a3b，不确定是否可以兼容Qwen3全系
     
     try:
         logger.debug(f'=================================LLM输入: {data}')

@@ -9,9 +9,6 @@ MODEL = 'qwen2.5-0.5b-instruct'
 GPT_URL = 'http://47.101.64.190:9002/v1/chat/completions'
 MODEL = 'qwen3-0.6b'
 
-GPT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
-MODEL = 'qwen3-30b-a3b-instruct-2507'
-
 LLM_TYPE = "Qwen3-30B-A3B-Instruct"
 
 GPT_URL = 'http://47.101.64.190:9003/v1/chat/completions'
@@ -32,6 +29,9 @@ MODEL = 'Qwen3-4B-Instruct-2507'
 
 LLM_TYPE = "Qwen3-4B-Instruct"
 
+GPT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+# MODEL = 'qwen3-30b-a3b-instruct-2507'
+MODEL = 'qwen3-30b-a3b'
 
 API_KEY = 'sk-d8f0024e2d874a7dac8324538ecf2e6c'
 
@@ -52,8 +52,8 @@ API_FORCE_ONESHOT = 0                           # 模拟API结果测试时，强
 
 # 工具配置
 TOOL_CONFIG_FILE_EXT = '_config.py'             # 工具配置文件扩展名。请勿修改
-TOOL_CONFIG_FILE = 'modules/GAB/GAB_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
 TOOL_CONFIG_FILE = 'modules/xiaoke/xiaoke_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
+TOOL_CONFIG_FILE = 'modules/GAB/GAB_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
 
 # Flask 配置
 FLASK_ENV = 'development'

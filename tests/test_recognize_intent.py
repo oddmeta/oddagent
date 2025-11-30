@@ -15,8 +15,8 @@ logger.setLevel(logging.INFO)
 
 TEST_CONFIG_FILE = '../modules/GAB/GAB_config.test.json'            # 请确保此路径正确
 TEST_CONFIG_FILE = '../modules/xiaoke/xiaoke_config.test.json'            # 请确保此路径正确
-API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'                # API地址
 API_BASE_URL = 'http://172.16.237.141:5050/oddagent/chat'                # API地址
+API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'                # API地址
 
 class TestItem:
     def __init__(self, tool_name: str, instruction: str):

@@ -8,7 +8,7 @@ tool_config = {
     {
       "tool_name": "meeting_create",
       "name": "创建会议",
-      "description": "创建会议服务。",
+      "description": "创建会议服务。开个xx，创建xx，建个xx，xx是会议名称",
       "parameters": [
         {"name": "meeting_name", "desc": "会议名称", "type": "string", "required": True},
       ],
@@ -27,7 +27,6 @@ tool_config = {
         { "tool_name": "meeting_create", "slots": { "meeting_name": "需求讨论会议" }},
         { "tool_name": "meeting_create", "slots": { "meeting_name": "晨会" }}
       ],
-
       "tool_api_url": "https://api.xiaoke.ai/api/meeting_create",
       "tool_api_method": "POST",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvo65ceo54#POST_/api/v1/mc/confs",

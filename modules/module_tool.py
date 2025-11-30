@@ -14,6 +14,7 @@ import glob
 
 import odd_agent_config as config
 from odd_agent_logger import logger
+from modules.generate_testset import process_json_py_file
 
 def load_tool_templates(file_path):
     """
@@ -333,3 +334,59 @@ def fix_json(bad_json):
         # 如果解析失败，打印错误信息，但不会崩溃
         logger.error("给定的字符串不是有效的 JSON 格式。")
 
+def load_skills():
+    """加载技能"""
+
+    skill_list = []
+
+    # 查找所有.json.py结尾的文件
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    json_py_files = []
+
+    if config.TOOL_CONFIG_FILE == "*":
+        for file_path in glob.glob(f"**/{config.TOOL_CONFIG_FILE}{config.TOOL_CONFIG_FILE_EXT}", recursive=True):
+            # 排除__init__.py等非配置文件
+            if not os.path.basename(file_path).startswith("__"):
+                file_path = os.path.join(current_dir, file_path)
+                print(f"处理文件: {file_path}")
+                json_py_files.append(file_path)
+    else:
+        json_py_files = [config.TOOL_CONFIG_FILE]
+
+    if not json_py_files:
+        logger.error(f"当前路径：{current_dir}， 没有找到.json.py结尾的文件")
+        return {"agent_tool_list": []}
+    
+    print(f"找到 {len(json_py_files)} 个.json.py文件")
+    print("==================================================================")
+
+    # 处理每个文件
+    for file_path in json_py_files:
+        print("------------------------------------------------------------------")
+        print(f"处理文件: {file_path}")
+        print("------------------------------------------------------------------")
+        
+        # 处理文件
+        processed_tools = process_json_py_file(file_path)
+        
+        if processed_tools:
+            # 生成输出文件名（将.json.py改为.json）
+            output_filename = os.path.basename(file_path).replace('.py', '')
+            
+            # 保存为JSON文件
+            result = {
+                "file_name": output_filename,
+                "agent_tool_list": processed_tools
+            }
+            skill_list.append(result)
+            
+            print(f"已保存处理后的文件: {output_filename}")
+            print(f"处理了 {len(processed_tools)} 个工具项")
+        else:
+            print(f"文件 {file_path} 处理失败")
+
+        print("------------------------------------------------------------------")
+    
+    print("所有文件处理完成")
+
+    return skill_list

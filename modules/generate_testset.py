@@ -20,6 +20,7 @@
 import os
 import json
 import importlib.util
+import glob
 
 def load_python_module(file_path):
     """加载Python模块"""
@@ -41,8 +42,6 @@ def process_tool_item(tool_item):
             processed_tool[field] = tool_item[field]
     
     return processed_tool
-
-import glob
 
 def process_json_py_file(file_path):
     """处理单个.json.py文件"""
@@ -74,7 +73,8 @@ def process_json_py_file(file_path):
         print(f"处理文件 {file_path} 时出错: {str(e)}")
         return None
 
-def main(config_file_ext: str = "_config.py"):
+
+def main(config_file:str = "*", config_file_ext: str = "_config.py"):
     """主函数"""
     # 获取当前目录
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -85,7 +85,7 @@ def main(config_file_ext: str = "_config.py"):
     # 查找所有.json.py结尾的文件
     json_py_files = []
 
-    for file_path in glob.glob(f"**/*{config_file_ext}", recursive=True):
+    for file_path in glob.glob(f"**/{config_file}{config_file_ext}", recursive=True):
         # 排除__init__.py等非配置文件
         if not os.path.basename(file_path).startswith("__"):
             file_path = os.path.join(current_dir, file_path)
@@ -94,7 +94,7 @@ def main(config_file_ext: str = "_config.py"):
 
     if not json_py_files:
         print("没有找到.json.py结尾的文件")
-        return
+        return {"agent_tool_list": []}
     
     print(f"找到 {len(json_py_files)} 个.json.py文件")
     print("==================================================================")
