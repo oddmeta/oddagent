@@ -17,20 +17,20 @@ class MeetingConfig:
     def __init__(self):
 
         """初始化会议配置"""
-        self.IP = config.meeting_cfg.get("ip", "10.67.20.13")
-        self.USER_NAME = config.meeting_cfg.get("user_name", "yx1")
-        self.PASSWORD = config.meeting_cfg.get("password", "888888")
-        self.OAUTH_CONSUMER_KEY = config.meeting_cfg.get("oauth_consumer_key", "1") 
-        self.OAUTH_CONSUMER_SECRET = config.meeting_cfg.get("oauth_consumer_secret", "1")
+        self.IP = config.APS_CONFIG.get("ip", "10.67.20.14")
+        self.USER_NAME = config.APS_CONFIG.get("user_name", "yx")
+        self.PASSWORD = config.APS_CONFIG.get("password", "888888")
+        self.OAUTH_CONSUMER_KEY = config.APS_CONFIG.get("oauth_consumer_key", "1") 
+        self.OAUTH_CONSUMER_SECRET = config.APS_CONFIG.get("oauth_consumer_secret", "1")
 
         # 全局凭证（登录后赋值）
-        self.ACCOUNT_TOKEN = config.meeting_cfg.get("account_token", "")
-        self.COOKIE_JAR = config.meeting_cfg.get("cookie_jar", "")
+        self.ACCOUNT_TOKEN = config.APS_CONFIG.get("account_token", "")
+        self.COOKIE_JAR = config.APS_CONFIG.get("cookie_jar", "")
 
-        self.BASE_API = config.meeting_cfg.get("base_api", f"http://{self.IP}/api/v1/")
+        self.BASE_API = config.APS_CONFIG.get("base_api", f"http://{self.IP}/api/v1/")
 
         # 会议ID，入会后更新
-        self.CONF_ID = config.meeting_cfg.get("conf_id", "")
+        self.CONF_ID = config.APS_CONFIG.get("conf_id", "")
 
     def dump(self):
         """打印会议配置"""
@@ -116,10 +116,10 @@ class MeetingExecuter():
             logger.error(f"❌ 解析token失败: {token_result}")
             return {}
 
-        login_url = urljoin(config.meeting_cfg["base_api"], "system/login")
+        login_url = urljoin(config.APS_CONFIG["base_api"], "system/login")
         login_data = {
-            "username": config.meeting_cfg["user_name"],
-            "password": config.meeting_cfg["password"],
+            "username": config.APS_CONFIG["user_name"],
+            "password": config.APS_CONFIG["password"],
             "account_token": account_token
         }
 
@@ -158,7 +158,7 @@ class MeetingExecuter():
         }
         conf_data.update(extra_params)
 
-        create_url = urljoin(config.meeting_cfg["base_api"], "mc/confs")
+        create_url = urljoin(config.APS_CONFIG["base_api"], "mc/confs")
         data = {
             "params": json.dumps(conf_data),
             "account_token": self.meeting_config.ACCOUNT_TOKEN
@@ -312,6 +312,8 @@ class MeetingExecuter():
         if not self.meeting_config.ACCOUNT_TOKEN or not self.meeting_config.COOKIE_JAR:
             self.login()
 
+        logger.info(f"获取所有账号信息, start={start}, count={count}, account_filter={account_filter}, token={self.meeting_config.ACCOUNT_TOKEN}, cookie={self.meeting_config.COOKIE_JAR}")
+
         # 构建URL和参数
         accounts_url = urljoin(self.meeting_config.BASE_API, "amc/accounts")
         params = {"account_token": self.meeting_config.ACCOUNT_TOKEN}
@@ -339,6 +341,8 @@ class MeetingExecuter():
         # 获取所有账号信息
         all_accounts = self.get_all_accounts()  # 获取所有账号
         results = []
+
+        print(f"搜索别名: {alias}, 所有账号: {all_accounts}")
 
         # 搜索字段列表，从真实姓名搜索
         # search_fields = ['account', 'name']

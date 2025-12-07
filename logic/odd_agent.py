@@ -17,7 +17,7 @@ from tools import tool_prompts
 from modules.module_tool import get_slot_parameters_from_tool
 from odd_agent_logger import logger
 import odd_agent_config as config
-from logic.odd_agent_error import odd_err_desc, EM_ERR_INTENT_RECOGNITION_EXCEPTION, EM_ERR_INTENT_RECOGNITION_NO_TOOL, EM_ERR_INTENT_RECOGNITION_NO_TOOL2
+from logic.odd_agent_error import odd_err_desc, EM_ERR_INTENT_RECOGNITION_EXCEPTION, EM_ERR_INTENT_RECOGNITION_NO_TOOL, EM_ERR_INTENT_RECOGNITION_NO_TOOL2, EM_ERR_API_INVOKE_EXCEPTION
 
 class OddAgent:
     def __init__(self, tool_templates: dict):
@@ -337,11 +337,65 @@ class OddAgent:
                         logger.warning(f"工具: {self.current_purpose}, 必填槽位未填")
                         return False
                 else:
-                    logger.warning(f"工具 {self.current_purpose} 返回错误码 {response.get('err_code')}")
+                    logger.warning(f"工具 {self.current_purpose} 返回错误码 {response.get('err_code')}:{EM_ERR_API_INVOKE_EXCEPTION}")
+                    if response.get("err_code") == EM_ERR_API_INVOKE_EXCEPTION:
+                        logger.warning(f"工具: {self.current_purpose}, API调用异常")
+                        return True
                     return False
             return False
 
-    def process_oddagent_chat(self, user_input: str):
+    def _compose_result(self, user_input, tool_name, response):
+        result = {
+                    "err_code": 0, 
+                    "msg": response.get("message", "success"), 
+                    "data": 
+                    {
+                        "answer": 
+                        {
+                            "err_code": 0, 
+                            "tool_name": tool_name,
+                            "data": "用户输入: {}".format(user_input), 
+                            "message": response.get("message", "success")
+                        }
+                    }
+        }
+
+        return result
+    
+    def _is_terminate_command(self, user_input: str):
+        """
+        判断用户输入是否是退出对话命令
+        FIXME 将退出对话命令放到配置文件中，会导致与一些命令词冲突（如：退出会议），暂时先挫一点这么写死，有空再来思考方案。
+        :param user_input: 用户输入
+        :return: 是否是退出对话命令
+        """
+        terminate_commands = ["再见", "拜拜", "退出对话", "结束对话"]
+        return any(cmd in user_input for cmd in terminate_commands)
+
+    def process_mcp_chat(self, messages, is_stream=False):
+        """
+        处理MCP格式的聊天请求
+        :param messages: MCP格式的消息列表
+        :param is_stream: 是否是流式响应
+        :return: MCP格式的响应
+        """
+        # 获取最后一条用户消息
+        user_input = None
+        for msg in reversed(messages):
+            if msg.get('role') == 'user':
+                user_input = msg.get('content')
+                break
+        
+        if not user_input:
+            return {"error": "No user message found"}
+            
+        # 使用现有的聊天处理逻辑
+        response = self.process_oddagent_chat(user_input)
+        
+        # 转换为MCP兼容的格式
+        return response
+
+    def process_oddagent_chat(self, user_input: str, api_mode:int = 0):
         """
         处理OddAgent聊天
         :param user_input: 用户输入
@@ -349,12 +403,22 @@ class OddAgent:
         """
         logger.debug("==============================================================")
         logger.debug("==============================================================")
-        logger.debug(f"process_oddagent_chat: {user_input}, self.current_purpose: {self.current_purpose}")
+        logger.debug(f"process_oddagent_chat: {user_input}, self.current_purpose: {self.current_purpose}, api_mode: {api_mode}")
         logger.debug("==============================================================")
         logger.debug("==============================================================")
 
         # 添加用户输入到聊天记录
         self._save_chat_history(role="user", msg=user_input)
+
+        # 优先处理退出对话服务
+        is_terminate_command = self._is_terminate_command(user_input)
+        if is_terminate_command:
+            self.current_purpose = "chat_terminate"
+            logger.info(f"用户请求退出对话")
+            result = self._compose_result(user_input, "chat_terminate", {"err_code": 0, "msg": "已退出对话"})
+            self._save_chat_history(role="assistant", msg="已退出对话")
+            self.reset_current_tool()
+            return result
 
         result = {}
         is_multi_round = False # 是否当前user_input是否是多轮交互
@@ -400,6 +464,15 @@ class OddAgent:
         if not is_multi_round and self.current_purpose:
             is_tool_switched, error = self.is_tool_switched(user_input)
 
+            # 优先处理退出对话服务
+            if self.current_purpose == "chat_terminate":
+                logger.info(f"用户请求退出对话")
+                result = self._compose_result(user_input, "chat_terminate", result)
+                self._save_chat_history(role="assistant", msg="已退出对话")
+                self.reset_current_tool()
+                # {'err_code': 0, 'tool_name': 'chat_terminate', 'message': '[chat_terminate] API调用成功', 'slots': {}, 'data': '[模拟API模式] 假装成功！'}
+                return result
+
         if is_tool_switched:
             logger.warn(f"用户切换工具")
             # 重置当前工具（清除历史聊天记录），重新识别意图
@@ -422,7 +495,7 @@ class OddAgent:
             # 如果重新识别到工具，继续处理；否则生成无工具回复
             if self.current_purpose:
                 processor: ToolProcessorImpl = self.load_processor(self.current_purpose)
-                response = processor.process(user_input, self.chat_history)
+                response = processor.process(user_input, self.chat_history, api_mode)
                 finished = self.check_response_finished(response)
                 if finished:
                     self.reset_current_tool()
@@ -433,7 +506,7 @@ class OddAgent:
             response = {}
             if self.current_purpose in self.tool_templates:
                 processor = self.load_processor(self.current_purpose)
-                response = processor.process(user_input, self.chat_history)
+                response = processor.process(user_input, self.chat_history, api_mode)
 
                 finished = self.check_response_finished(response)
                 if finished:
@@ -482,7 +555,6 @@ class OddAgent:
         }
         '''
         
-
         return response
     
     def _save_chat_history(self, role, msg):

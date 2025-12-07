@@ -17,7 +17,7 @@ import sys
 
 import odd_agent_config as config
 from logic.schedule_task import OddAgentScheduler
-from logic.odd_agent_error import OddException, from_exc, odd_exception_handler
+from logic.odd_agent_error import OddException, odd_exception_handler
 
 # 全局保存线程引用
 schedule_task = None
@@ -38,14 +38,13 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-
-
 # register blueprints
 def register_blueprints(new_app, path):
     for name in werkzeug.utils.find_modules(path):
         m = werkzeug.utils.import_string(name)
         new_app.register_blueprint(m.bp)
     new_app.errorhandler(OddException)(odd_exception_handler)
+
     return new_app
 
 app = Flask(__name__, static_url_path='')

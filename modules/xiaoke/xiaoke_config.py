@@ -32,49 +32,12 @@ tool_config = {
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvo65ceo54#POST_/api/v1/mc/confs",
       "enabled": True
     },
-    {
-      "tool_name": "meeting_end",
-      "name": "结束会议",
-      "description": "结束会议服务。",
-      "parameters": [ ],
-      "test_instructions": [
-        "结束会议",
-        "结会",
-        "把会议结了"
-      ],
-      "test_answers": [
-        { "tool_name": "meeting_end", "slots": { }},
-        { "tool_name": "meeting_end", "slots": { }},
-        { "tool_name": "meeting_end", "slots": { }},
-      ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_end",
-      "tool_api_method": "POST",
-      "enabled": True
-    },
-    {
-      "tool_name": "meeting_leave",
-      "name": "退出会议",
-      "description": "退出会议服务。",
-      "parameters": [ ],
-      "test_instructions": [
-        "退出会议",
-        "退会",
-        "把会议退了"
-      ],
-      "test_answers": [
-        { "tool_name": "meeting_leave", "slots": { }},
-        { "tool_name": "meeting_leave", "slots": { }},
-        { "tool_name": "meeting_leave", "slots": { }},
-      ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_leave",
-      "tool_api_method": "POST",
-      "enabled": True
-    },
+
     {
       "tool_name": "meeting_invite",
       "name": "邀请参会人",
-      "description": "邀请参会人服务，可邀请指定会议的参会人。呼叫xxx，邀请一下xxx，把xxx邀请入会，呼一下xxx，拉一下xxx。",
-      "example": "JSON：[{'name': 'invitees', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：帮我邀请Jacky和Catherine\n答：{ 'invitees': 'Jacky,Catherine' }",
+      "description": "邀请参会人服务，可邀请指定会议的参会人。例：呼叫xxx，呼叫xxx会议室，邀请一下xxx，把xxx邀请入会，呼一下xxx，拉一下xxx，把xxx拉入会。xxx是参会人名称。",
+      "example": "JSON：[{'name': 'invitees', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：呼叫韦国华\n答：{ 'invitees': '韦国华' }\n输入：呼叫3E会议室\n答：{ 'invitees': '3E会议室' }\n输入：帮我邀请Jacky和Catherine\n答：{ 'invitees': 'Jacky,Catherine' }",
       "parameters": [
         {"name": "invitees", "desc": "参会人列表，逗号分隔", "type": "string", "required": True}
       ],
@@ -82,13 +45,19 @@ tool_config = {
         "邀请一下Catherine",
         "邀请Jacky和Catherine",
         "把会议邀请给Catherine",
-        "拉一下Jacky入会"
+        "拉一下Jacky入会",
+        "呼叫韦国华",
+        "呼叫Jacky和韦国华",
+        "呼叫3E会议室"
       ],
       "test_answers": [
         { "tool_name": "meeting_invite", "slots": { "invitees": "Catherine" }},
         { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky,Catherine" }},
         { "tool_name": "meeting_invite", "slots": { "invitees": "Catherine" }},
         { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "韦国华" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky,韦国华" }},
+        { "tool_name": "meeting_invite", "slots": { "invitees": "3E会议室" }}
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/meeting_invite",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#POST_/api/v1/vc/confs/{conf_id}/mts",
@@ -105,16 +74,59 @@ tool_config = {
       ],
       "test_instructions": [
         "挂断一下Catherine",
+        "挂断韦国华",
         "挂断Jacky和Catherine",
         "把Catherine挂断"
       ],
       "test_answers": [
         { "tool_name": "meeting_dropout", "slots": { "participants": "Catherine" }},
+        { "tool_name": "meeting_dropout", "slots": { "participants": "韦国华" }},
         { "tool_name": "meeting_dropout", "slots": { "participants": "Jacky,Catherine" }},
         { "tool_name": "meeting_dropout", "slots": { "participants": "Catherine" }},
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/meeting_dropout",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#DELETE_/api/v1/vc/confs/{conf_id}/online_mts",
+      "tool_api_method": "POST",
+      "enabled": True
+    },
+    {
+      "tool_name": "meeting_leave",
+      "name": "退出会议",
+      "description": "退出会议服务。把当前会议给退了。",
+      "parameters": [ ],
+      "example": " ",
+      "test_instructions": [
+        "退出会议",
+        "退会",
+        "把会议退了"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_leave", "slots": { }},
+        { "tool_name": "meeting_leave", "slots": { }},
+        { "tool_name": "meeting_leave", "slots": { }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_leave",
+      "tool_api_method": "POST",
+      "enabled": True
+    },    
+    {
+      "tool_name": "meeting_end",
+      "name": "结束会议",
+      "description": "结束会议服务。把当前会议给结了。",
+      "parameters": [ ],
+      "test_instructions": [
+        "结束会议",
+        "结会",
+        "把会议关了吧",
+        "把会议结了"
+      ],
+      "test_answers": [
+        { "tool_name": "meeting_end", "slots": { }},
+        { "tool_name": "meeting_end", "slots": { }},
+        { "tool_name": "meeting_end", "slots": { }},
+        { "tool_name": "meeting_end", "slots": { }},
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/meeting_end",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -354,16 +366,19 @@ tool_config = {
     {
       "tool_name": "start_polling",
       "name": "开始轮巡",
-      "description": "开始轮询服务。轮询一词也可以翻译为轮巡",
+      "description": "开始轮询服务。轮询一词也可以翻译为轮巡。例：开始轮巡，启动轮巡，开始我的轮巡。",
       "parameters": [],
+      "example": " ",
       "test_instructions": [
         "开始轮巡",
-        "开始我的轮巡",
+        "启动轮巡",
+        "轮巡启动",
         "帮我开始轮巡",
         "给我开始轮巡",
         "轮巡开始"
       ],
       "test_answers": [
+        { "tool_name": "start_polling", "slots": { }},
         { "tool_name": "start_polling", "slots": { }},
         { "tool_name": "start_polling", "slots": { }},
         { "tool_name": "start_polling", "slots": { }},
@@ -396,6 +411,27 @@ tool_config = {
       "tool_api_url": "https://api.xiaoke.ai/api/stop_polling",
       "tool_api_method": "POST",
       "enabled": True
+    },
+    {
+      "tool_name": "chat_terminate", 
+      "name": "退出对话", 
+      "description": "退出对话服务。在多轮对话中，用户可以使用该服务退出并结束当前对话。例：再见，拜拜，退出对话，结束", 
+      "parameters": [ ], 
+      "test_instructions": [
+        "再见",
+        "拜拜",
+        "退出对话",
+        "结束"
+        ],
+      "test_answers": [
+        { "tool_name": "chat_terminate", "slots": { }},
+        { "tool_name": "chat_terminate", "slots": { }},
+        { "tool_name": "chat_terminate", "slots": { }},
+        { "tool_name": "chat_terminate", "slots": { }}
+      ],
+      "tool_api_url": "https://api.xiaoke.ai/api/chat_terminate",
+      "tool_api_method": "POST", 
+      "enabled": False
     },
     {
       "tool_name": "chat_log", 

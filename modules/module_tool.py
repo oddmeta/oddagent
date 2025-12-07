@@ -111,7 +111,7 @@ def load_all_tool_config(config_file_ext: str = "_config.py"):
         
         all_tool_configs = load_tool_config(config.TOOL_CONFIG_FILE)
 
-    logger.debug(f"加载工具配置: {all_tool_configs}")
+    # logger.debug(f"加载工具配置: {all_tool_configs}")
 
     return all_tool_configs
 
@@ -221,7 +221,8 @@ def get_dynamic_example(tool_config):
     if 'example' in tool_config and tool_config['example'] != '':
         return tool_config['example']
     else:
-        return "JSON：[{'name': 'phone', 'desc': '需要查询的手机号', 'value': ''}, {'name': 'month', 'desc': '查询的月份，格式为yyyy-MM', 'value': ''} ]\n输入：帮我查一下18724011022在2024年7月的流量\n答：{ 'phone': '18724011022', 'month': '2024-07' }"
+        # FIXME 给一个默认的示例？？？
+        return "N/A"
 
 def get_slot_update_json(slot):
     """

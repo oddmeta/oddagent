@@ -4,8 +4,6 @@ import time
 import requests
 from threading import Lock
 from flask import request, jsonify, Response, Blueprint, make_response
-import glob
-import os
 
 import odd_agent_config as config
 
@@ -151,10 +149,11 @@ def api_oddagent_chat():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
+    api_mode = data.get('api_mode', config.API_FAKE_API_RESULT)
     time_start = time.time()
-    response = odd_agent.process_oddagent_chat(question)
+    response = odd_agent.process_oddagent_chat(question, api_mode)
     time_end = time.time()
-    logger.info(f"api_oddagent_chat: {question}, time_cost: {time_end - time_start}, response: {response}")
+    logger.info(f"api_oddagent_chat: {question}, time_cost: {time_end - time_start:.4f}s, response: {response}")
     
     return jsonify({"answer": response})
 

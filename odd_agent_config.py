@@ -1,39 +1,40 @@
+import os
 
 DEBUG = True
 
 # LLM 模型参数
-
-GPT_URL = 'http://47.101.64.190:9001/v1/chat/completions'
-MODEL = 'qwen2.5-0.5b-instruct'
-
-GPT_URL = 'http://47.101.64.190:9002/v1/chat/completions'
-MODEL = 'qwen3-0.6b'
-
-LLM_TYPE = "Qwen3-30B-A3B-Instruct"
-
-GPT_URL = 'http://47.101.64.190:9003/v1/chat/completions'
-MODEL = 'qwen2.5-0.5b-lora'
-
-GPT_URL = 'http://47.101.64.190:9001/v1/chat/completions'
-MODEL = 'qwen2.5-0.5b-instruct'
-
 # GPT_URL = 'http://47.101.64.190:9000/v1/chat/completions'
-# MODEL = 'qwen3-4b-instruct'
 # MODEL = 'Qwen3-4B-Instruct-2507'
+# LLM_TYPE = "Qwen3-4B-Instruct"
 
-LLM_TYPE = "qwen2.5-0.5b-instruct"
+# GPT_URL = 'http://47.101.64.190:9001/v1/chat/completions'
+# MODEL = 'qwen2.5-0.5b-instruct'
 
-GPT_URL = 'http://47.101.64.190:9000/v1/chat/completions'
-MODEL = 'qwen3-4b-instruct'
-MODEL = 'Qwen3-4B-Instruct-2507'
+# GPT_URL = 'http://47.101.64.190:9002/v1/chat/completions'
+# MODEL = 'qwen3-0.6b'
 
-LLM_TYPE = "Qwen3-4B-Instruct"
+# GPT_URL = 'http://47.101.64.190:9003/v1/chat/completions'
+# MODEL = 'qwen2.5-0.5b-lora'
 
-GPT_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
-# MODEL = 'qwen3-30b-a3b-instruct-2507'
-MODEL = 'qwen3-30b-a3b'
+# GPT_URL = 'http://47.101.64.190:9001/v1/chat/completions'
+# MODEL = 'qwen2.5-0.5b-instruct'
 
-API_KEY = 'sk-d8f0024e2d874a7dac8324538ecf2e6c'
+# LLM_TYPE = "qwen2.5-0.5b-instruct"
+
+GPT_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+# MODEL = "qwen3-30b-a3b-instruct-2507"
+MODEL = "qwen3-30b-a3b"
+LLM_TYPE = "Qwen3-30B-A3B-Instruct"
+API_KEY = "sk-d8f0024e2d874a7dac8324538ecf2e6c" 
+
+# GPT_URL = "https://qianfan.baidubce.com/v2"
+# MODEL = "ernie-4.5-turbo-128k"
+# API_KEY = "bce-v3/ALTAK-98SnqK7yDyv7gBTyy4v7C/631923f7aba62b3686a9354de1cd3e6ba8f6c9dc"
+
+GPT_URL = os.environ.get("GPT_URL", GPT_URL)
+MODEL = os.environ.get("MODEL", MODEL)
+API_KEY = os.environ.get("API_KEY", API_KEY)
+LLM_TYPE = os.environ.get("LLM_TYPE", LLM_TYPE)
 
 SYSTEM_PROMPT = 'You are a helpful assistant.'
 NO_TOOL_RESPONSE = "您好，我是一个会议助手，我还不会这项技能。我可以帮您创建会议，设置发言人，广播会场，主看会场，选看会场，或请求指定会场发言等。"                 # 无工具识别的默认响应
@@ -52,8 +53,8 @@ API_FORCE_ONESHOT = 0                           # 模拟API结果测试时，强
 
 # 工具配置
 TOOL_CONFIG_FILE_EXT = '_config.py'             # 工具配置文件扩展名。请勿修改
-TOOL_CONFIG_FILE = 'modules/xiaoke/xiaoke_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
 TOOL_CONFIG_FILE = 'modules/GAB/GAB_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
+TOOL_CONFIG_FILE = 'modules/xiaoke/xiaoke_config.py'  # 工具配置文件，*表示使用modules目录下所有*-config.py文件作为工具配置
 
 # Flask 配置
 FLASK_ENV = 'development'
@@ -62,6 +63,20 @@ BACKEND_PORT = 5050
 CORS_ORIGINS = "*"
 API_PREFIX = '/api'
 BACKEND_URL = f'http://{BACKEND_HOST}:{BACKEND_PORT}'
+
+
+# MCP服务器配置
+MCP_VERSION = "1.0"                 # MCP协议版本
+MCP_SESSION_TIMEOUT = 3600          # # MCP会话超时时间（秒），默认1小时
+MCP_STREAM_ENABLED = True           # 是否启用流式响应
+MCP_API_PREFIX = "/mcp"             # MCP服务器前缀
+# 支持的模型列表
+SUPPORTED_MODELS = [
+    "oddagent-default",
+    "oddagent-llm",
+    "qwen2.5-0.5b-instruct",
+    "qwen3-4b-instruct"
+]
 
 # OddAsr 配置
 # ODD_ASR_URL = 'https://oddasr.odmeta.net'
@@ -80,11 +95,11 @@ LOG_PATH = './log/'
 LOG_FILE = 'odd_agent.log'
 
 # 会议系统配置
-APS_IP = "10.67.20.13"
+APS_IP = "10.67.20.14"
 APS_AUTO_LOGIN = True
-meeting_cfg = {
+APS_CONFIG = {
     "ip": f"{APS_IP}",
-    "user_name": "yx1",
+    "user_name": "yx",
     "password": "888888",
     "oauth_consumer_key": "1",
     "oauth_consumer_secret": "1",

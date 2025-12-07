@@ -6,9 +6,9 @@ tool_config = {
     {
       "tool_name": "INSTANT_MEETING",
       "name": "创建会议",
-      "description": "立即创建会议。",
+      "description": "立即创建会议。例：创建xxx，开个xxx，xxx会议。",
       "parameters": [
-        { "name": "meeting_name", "desc": "会议名称", "type": "string", "required": False }
+        { "name": "meeting_name", "desc": "会议名称", "type": "string", "required": True }
       ],
       "example": "输入：江苏省公安厅创建公安会议\n答：{ 'meeting_name': '公安会议' }",
       "test_instructions": [
@@ -185,7 +185,7 @@ tool_config = {
     {
       "tool_name": "POLL_INTERVAL",
       "name": "设置会议轮询间隔",
-      "description": "控制会议轮询（轮巡）间隔时间。",
+      "description": "控制会议轮询（轮巡）间隔时间。如：间隔x秒，x秒间隔,轮询x秒。x秒为正整数，值应该转换为数字。",
       "parameters": [
         { "name": "poll_interval", "desc": "轮询/轮巡间隔时间，单位秒", "type": "number", "required": True }
       ],
@@ -216,7 +216,7 @@ tool_config = {
       ],
       "tool_api_url": "https://api.xiaoke.ai/api/POLL_INTERVAL",
       "tool_api_method": "POST",
-      "enabled": False
+      "enabled": True
     },
     {
       "tool_name": "ONLINE_MTS_POST",

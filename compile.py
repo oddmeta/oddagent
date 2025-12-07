@@ -110,7 +110,8 @@ if __name__ == '__main__':
     # 将根目录下的所有.py文件复制到build目录下
     for py_file in glob.glob("*.py"):
         build_target_dir = get_build_target_dir()
-        if not py_file.startswith("venv") and \
+        if py_file not in ["setup.py", "compile.py", "compile2.py"] and \
+           not py_file.startswith("venv") and \
            not py_file.startswith(".venv") and \
            not py_file.startswith("logs") and \
            not py_file.startswith("build") and \

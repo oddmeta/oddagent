@@ -19,7 +19,7 @@ from tools.tool_datetime_utils import tool_get_current_date, tool_get_current_ti
 from tools.tool_llm import llm_chat
 from odd_agent_logger import logger
 import odd_agent_config as config
-from logic.odd_agent_error import EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, EM_ERR_INTENT_RECOGNITION_NO_TOOL3, odd_err_desc
+from logic.odd_agent_error import EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, EM_ERR_INTENT_RECOGNITION_NO_TOOL3, odd_err_desc, OddException
 
 class ToolProcessorImpl(ToolProcessor):
     def __init__(self, tool_config):
@@ -37,7 +37,7 @@ class ToolProcessorImpl(ToolProcessor):
         self.tool_api_headers = tool_config.get("tool_api_headers", {}) # TODO 暂未配置文件中读取，后续从配置文件中读取
         self.tool_executer = ToolExecuterImpl(tool_config)
 
-    def process(self, user_input, context):
+    def process(self, user_input, context, api_mode):
         """
         处理用户输入，更新槽位，检查完整性，以及与用户交互
         :param user_input: 用户的输入
@@ -92,11 +92,11 @@ class ToolProcessorImpl(ToolProcessor):
         logger.debug(f'slot update after: {self.slot}')
 
         if is_slot_fully_filled(self.slot):
-            return self.process_complete_data(context)
+            return self.process_complete_data(context, api_mode)
         else:
             return self.process_more_slot_data(user_input, context)
 
-    def process_complete_data(self, context):
+    def process_complete_data(self, context, api_mode):
         """
         处理完整的数据，调用工具API，生成用户友好的回复
         :param context: 对话的上下文
@@ -122,25 +122,31 @@ class ToolProcessorImpl(ToolProcessor):
         logger.debug(f'slots_data: {slots_data}')
         
         # 调用工具API
-        api_result = self.tool_executer.execute(slots_data=slots_data)
-        logger.debug(f'API结果: {api_result}')
-        # 处理API结果
-        if "error" in api_result:
-            logger.error(f"调用API时出现错误：{api_result['error']}")
-            result = {"err_code": EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, "msg": odd_err_desc(EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR), "data": "slot_update"}
-            return result
-        
-        if config.API_PRETTY_RSP:
-            # 通过AI处理API结果，生成用户友好的回复
-            user_friendly_response = self.tool_executer.execute_result_parser(api_result, context)
-            logger.debug(f'用户friendly_response: {user_friendly_response}')
-        else:
-            # user_friendly_response = {"answer": api_result}
-            user_friendly_response = api_result
+        try:
+            api_result = self.tool_executer.execute(slots_data=slots_data, api_mode=api_mode)
+            logger.debug(f'API结果: {api_result}')
+            # 处理API结果
+            if "error" in api_result:
+                logger.error(f"调用API时出现错误：{api_result['error']}")
+                result = {"err_code": EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR, "msg": odd_err_desc(EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR), "data": f"error: {EM_ERR_INTENT_RECOGNITION_API_CONNECTION_ERROR}"}
+                return result
+            
+            if config.API_PRETTY_RSP:
+                # 通过AI处理API结果，生成用户友好的回复
+                user_friendly_response = self.tool_executer.execute_result_parser(api_result, context)
+                logger.debug(f'用户friendly_response: {user_friendly_response}')
+            else:
+                # user_friendly_response = {"answer": api_result}
+                user_friendly_response = api_result
 
-        # result = {"err_code": 0, "msg": "success", "data": user_friendly_response}
-        result = user_friendly_response
-        logger.debug(f'process_complete_data: 返回结果: {result}')
+            # result = {"err_code": 0, "msg": "success", "data": user_friendly_response}
+            result = user_friendly_response
+            logger.debug(f'process_complete_data: 返回结果: {result}')
+
+        except OddException as e:
+            logger.error(f"调用工具API时出现错误：{e}")
+            result = {"err_code": e.err_code, "msg": e.message, "data": "调用工具API时出现错误：" + e.message}
+            return result
 
         return result
 

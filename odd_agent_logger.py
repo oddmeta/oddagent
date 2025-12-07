@@ -27,7 +27,7 @@ def _logging():
     
     log = logging.getLogger(logfile)
 
-    th = handlers.TimedRotatingFileHandler(filename=logfile, when='MIDNIGHT', backupCount=10, encoding='utf-8')
+    th = handlers.TimedRotatingFileHandler(filename=logfile, when='MIDNIGHT', backupCount=10, encoding='utf-8', delay=True)
     th.setFormatter(format)
     log.addHandler(th)
 

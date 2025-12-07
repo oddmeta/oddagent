@@ -28,11 +28,12 @@ class OddAgentScheduler(threading.Thread):
 
     def run(self):
         while not self._stop_event.is_set():
-            # 1. 检查登录状态
-            # if not self.meeting_assistant.is_login():
-            #     logger.info("登录状态失效，重新登录")
-            #     self.meeting_assistant.login()
-            # logger.debug("登录成功")
+            if config.API_FAKE_API_RESULT == 0:
+                # 1. 检查登录状态
+                if not self.meeting_assistant.is_login():
+                    logger.info("登录状态失效，重新登录")
+                    self.meeting_assistant.login()
+                    logger.debug("登录成功")
             time.sleep(1)
 
     def stop(self):
