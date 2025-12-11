@@ -36,7 +36,7 @@ tool_config = {
     {
       "tool_name": "meeting_invite",
       "name": "邀请参会人",
-      "description": "邀请参会人服务，可邀请指定会议的参会人。例：呼叫xxx，呼叫xxx会议室，邀请一下xxx，把xxx邀请入会，呼一下xxx，拉一下xxx，把xxx拉入会。xxx是参会人名称。",
+      "description": "邀请参会人服务，可邀请指定会议的参会人。输入例：呼叫Jacky，呼叫3E会议室，邀请一下Catherine，把Jacky邀请入会，呼一下Jacky，拉一下Catherine，把Catherine拉入会。",
       "example": "JSON：[{'name': 'invitees', 'desc': '参会人列表，逗号分隔', 'value': ''} ]\n输入：呼叫韦国华\n答：{ 'invitees': '韦国华' }\n输入：呼叫3E会议室\n答：{ 'invitees': '3E会议室' }\n输入：帮我邀请Jacky和Catherine\n答：{ 'invitees': 'Jacky,Catherine' }",
       "parameters": [
         {"name": "invitees", "desc": "参会人列表，逗号分隔", "type": "string", "required": True}
@@ -195,7 +195,7 @@ tool_config = {
     {
       "tool_name": "meeting_open_microphone",
       "name": "打开麦克风",
-      "description": "打开麦克风服务。",
+      "description": "用于打开麦克风。",
       "parameters": [ ],
       "test_instructions": [
         "打开麦克风",
@@ -226,7 +226,7 @@ tool_config = {
     {
       "tool_name": "meeting_close_microphone",
       "name": "关闭麦克风",
-      "description": "关闭麦克风服务。",
+      "description": "用于关闭麦克风。",
       "parameters": [ ],
       "test_instructions": [
         "关闭麦克风",

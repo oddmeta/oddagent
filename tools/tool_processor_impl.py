@@ -46,6 +46,10 @@ class ToolProcessorImpl(ToolProcessor):
         """
         logger.debug(f'用户输入：{user_input}, self.slot_template: {self.slot_template}， self.slot_dynamic_example: {self.slot_dynamic_example}')
 
+        # 检查当前工具是否有槽位需要填充
+        if len(self.slot_template) == 0:
+            return self.process_complete_data(context, api_mode)
+
         # 先检查本次用户输入是否有信息补充，保存补充后的结果   编写程序进行字符串value值diff对比，判断是否有更新
         slots_str = json.dumps(get_slot_update_json(self.slot_template), ensure_ascii=False)
 

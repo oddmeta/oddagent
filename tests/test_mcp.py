@@ -85,7 +85,7 @@ def test_health_check(base_url):
         logger.error(f"错误: {str(e)}")
         return False
 
-def test_chat_completion(base_url, model="oddagent-default", session_id=None, stream=False, message="你好，请介绍一下自己"):
+def test_chat_completion(base_url, model="odd-mcp", session_id=None, stream=False, message="请介绍一下自己"):
     """测试聊天完成端点"""
     url = f"{base_url}/mcp/chat/completions"
     logger.info(f"测试消息: {message}")

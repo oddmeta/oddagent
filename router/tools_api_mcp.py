@@ -124,6 +124,6 @@ def mcp_health():
     """MCP健康检查接口"""
     return jsonify({
         "status": "healthy",
-        "service": "OddAgent-MCP",
+        "service": "OddMCP",
         "version": "1.0.0"
     })
