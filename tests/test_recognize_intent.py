@@ -1,21 +1,20 @@
 # 在文件顶部添加
 # cython: language_level=3
 
-from typing import Optional
-import sys
 import json
 import requests
 import time
 
-from utils import load_config, compare_slots, logger, TestItem, TestResults, print_test_results
+from utils import load_config, compare_slots, _logging, TestItem, TestResults
 
 TEST_CONFIG_FILE = '../modules/GAB/GAB_config.test.json'            # 请确保此路径正确
-TEST_CONFIG_FILE = '../modules/xiaoke/xiaoke_config.test.json'            # 请确保此路径正确
-API_BASE_URL = 'http://172.16.237.141:5050/oddagent/chat'                # API地址
+TEST_CONFIG_FILE = '../modules/xiaoke/xiaoke_config.test.json'      # 请确保此路径正确
+API_BASE_URL = 'http://172.16.237.141:5050/oddagent/chat'           # API地址
 API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'                # API地址
 
 test_item_list = []
 test_results = TestResults()
+logger = _logging("test_recognize_intent")
 
 def api_oddagent_chat(message):
     """调用api_oddagent_chat API"""
@@ -177,6 +176,38 @@ def process_intent_tests(config):
 
             # 睡3秒，避免对服务器压力过大
             time.sleep(1)
+
+
+def print_test_results(test_items: TestItem, test_results: TestResults):
+    global logger
+    """打印测试结果"""
+    logger.info("========== 测试结果汇总 ==========")
+    
+    # 计算耗时统计信息
+    durations = []
+    for item in test_items:
+        status = "通过" if item.success else "失败"
+        duration = item.end_time - item.start_time if item.end_time and item.start_time else 0
+        durations.append(duration)
+        logger.info(f"[{status}] 工具: {item.tool_name}, 指令: {item.instruction}, 耗时: {duration:.2f}s")
+    
+    # 计算统计数据
+    if durations:
+        avg_duration = sum(durations) / len(durations)
+        max_duration = max(durations)
+        min_duration = min(durations)
+        
+        logger.info(f"平均耗时: {avg_duration:.2f}s, 最大耗时: {max_duration:.2f}s,最小耗时: {min_duration:.2f}s")
+    
+    # 计算成功率
+    logger.info(f"测试结果:\n \
+                    总意图={test_results.total_intents}\n \
+                    总命令词={test_results.total_tests}\n \
+                    意图通过={test_results.success_intent}/{test_results.total_tests}，{test_results.success_intent/test_results.total_tests:.2%} % \n \
+                    意图槽位通过={test_results.success_intent_and_slots}/{test_results.total_tests}，{test_results.success_intent_and_slots/test_results.total_tests:.2%} % \n \
+                    测试失败={test_results.failed}")
+
+    logger.info("==================================")
 
 def run_test():
     """运行测试"""

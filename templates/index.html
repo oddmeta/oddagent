@@ -72,11 +72,14 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row mb-3">
       <div class="text-center col-12">
         <h1>小科语音助手智能体 Demo</h1>
       </div>
-    </div>
+      <div class="text-center col-12">
+        <button type="button" class="btn btn-primary" id="full_api_doc">完整接口文档</button>
+        <button type="button" class="btn btn-secondary" id="mcp_api_doc">MCP协议文档</button>
+      </div>
   </div><!-- /.container-fluid -->
 </section>
 <!-- /.content-header -->
@@ -497,6 +500,33 @@
         traditional: true
       })
   }
+
+  $('#full_api_doc').on("click",function() {
+    var element = document.createElement('a');
+    element.href = "/download/full_api_doc.md";
+    element.target = "_blank";
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setTimeout(function () {
+      exportDialog.close();
+    }, 2000);
+  })
+
+  $('#mcp_api_doc').on("click",function() {
+    var element = document.createElement('a');
+    element.href = "/download/mcp_protocol.md";
+    element.target = "_blank";
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setTimeout(function () {
+      exportDialog.close();
+    }, 2000);
+  })
+
 </script>
 
 </html>

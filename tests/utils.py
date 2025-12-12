@@ -2,11 +2,47 @@ import logging
 import json
 import sys
 from typing import Optional
+from logging import handlers
 
+
+my_logfile_name = "log.log"
 # 配置日志
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+def _logging(logfile_name):
+    FORMAT = "%(asctime)s %(levelname)s %(filename)s:%(lineno)s (%(process)s-%(thread)s) - %(message)s "
+    DATE = '%Y-%m-%d %H:%M:%S'
+
+    format = logging.Formatter(FORMAT, DATE)
+
+    import os
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    logfile = f"logs/{logfile_name}.log"
+    
+    log = logging.getLogger(logfile)
+
+    th = handlers.TimedRotatingFileHandler(filename=logfile, when='MIDNIGHT', backupCount=10, encoding='utf-8', delay=True)
+    th.setFormatter(format)
+    log.addHandler(th)
+
+    stdout = logging.StreamHandler()
+    stdout.setFormatter(format)
+    log.addHandler(stdout)
+
+    log.setLevel(logging.INFO)
+    
+    return log
+
+def getLogger(logfile_name):
+    global logger
+    if logfile_name != "":
+        mylogger = _logging(logfile_name)
+    else:
+        mylogger = _logging(my_logfile_name)
+    logger = mylogger
+    return logger
+
+logger = None
 
 class TestItem:
     def __init__(self, tool_name: str, instruction: str):
@@ -145,33 +181,3 @@ def compare_slots(expected_slots, responsed_slots):
     else:
         return True, "槽位匹配成功"
 
-
-def print_test_results(test_items: TestItem, test_results: TestResults):
-    """打印测试结果"""
-    logger.info("========== 测试结果汇总 ==========")
-    
-    # 计算耗时统计信息
-    durations = []
-    for item in test_items:
-        status = "通过" if item.success else "失败"
-        duration = item.end_time - item.start_time if item.end_time and item.start_time else 0
-        durations.append(duration)
-        logger.info(f"[{status}] 工具: {item.tool_name}, 指令: {item.instruction}, 耗时: {duration:.2f}s")
-    
-    # 计算统计数据
-    if durations:
-        avg_duration = sum(durations) / len(durations)
-        max_duration = max(durations)
-        min_duration = min(durations)
-        
-        logger.info(f"平均耗时: {avg_duration:.2f}s, 最大耗时: {max_duration:.2f}s,最小耗时: {min_duration:.2f}s")
-    
-    # 计算成功率
-    logger.info(f"测试结果:\n \
-                    总意图={test_results.total_intents}\n \
-                    总命令词={test_results.total_tests}\n \
-                    意图通过={test_results.success_intent}/{test_results.total_tests}，{test_results.success_intent/test_results.total_tests:.2%} % \n \
-                    意图槽位通过={test_results.success_intent_and_slots}/{test_results.total_tests}，{test_results.success_intent_and_slots/test_results.total_tests:.2%} % \n \
-                    测试失败={test_results.failed}")
-
-    logger.info("==================================")

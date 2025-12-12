@@ -1,34 +1,14 @@
 from typing import Optional
-import sys
-import os
-import json
 import requests
 import time
-import logging
-from io import StringIO
+
+from utils import load_config, compare_slots, _logging, TestItem, TestResults
 
 LOG_FILE = "test_negitive_dataset.log"
 API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'    # API地址
-DATASET_FILE = "docs/other_unknown examples.txt"
+DATASET_FILE = "../docs/other_unknown examples.txt"
 
-# 配置日志
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-logger.handlers.clear()
-
-# 创建格式化器
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-# 创建控制台处理器
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
-# 创建文件处理器，输出到LOG_FILE
-file_handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+logger = _logging(LOG_FILE)
 
 class TestItem:
     def __init__(self, tool_name: str, instruction: str):
