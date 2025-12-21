@@ -71,7 +71,7 @@ class ToolProcessorImpl(ToolProcessor):
         #                                                 slots_str, 
         #                                                 user_input)
 
-        new_info_json_raw, result = llm_chat(message, user_input, context)
+        new_info_json_raw, result = llm_chat(message, context)
 
         if result != 0:
             logger.error(f"调用LLM API时出现错误：{result}")
@@ -167,7 +167,7 @@ class ToolProcessorImpl(ToolProcessor):
         # message = tool_prompts.PROMPT_QUERY_SLOT.format(self.tool, self.tool_name, self.description, slots_str, self.slot_template, user_input)
         message = tool_prompts.PROMPT_QUERY_SLOT_USER.format(self.tool, self.tool_name, self.description, slots_str, self.slot_template, user_input)
 
-        result, err_code = llm_chat(message, user_input, context)
+        result, err_code = llm_chat(message, context)
 
         if err_code != 0:
             logger.error(f"调用LLM API时出现错误：{err_code}")

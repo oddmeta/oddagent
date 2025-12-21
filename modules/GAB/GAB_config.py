@@ -80,7 +80,7 @@ tool_config = {
     {
       "tool_name": "SPEAKER",
       "name": "设置发言人",
-      "description": "请xxx发言, 广播xxx, 将xxx设置为发言人,选看xxx,画面给xxx,主看xxx。\n其中: xxx 为发言人的名称，通常是为省、直辖市一级的省厅、公安厅，如湖南、湖南省厅、湖南公安厅等。",
+      "description": "设置某个会场画面作为发言人，以广播其图像。如：请xxx发言，调度上海, 广播xxx, 将xxx设置为发言人,选看xxx,画面给xxx,主看xxx。\n其中: xxx 为发言人的名称，通常是为省、直辖市一级的省厅、公安厅，如湖南、湖南省厅、湖南公安厅等。",
       "parameters": [
         { "name": "mt", "desc": "发言人会场名称", "type": "string", "required": True }
       ],

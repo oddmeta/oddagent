@@ -21,11 +21,10 @@ from logic.odd_agent_error import EM_ERR_LLM_APIKEY_ERROR, EM_ERR_LLM_CONNECTION
 # 禁用SSL证书验证警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def llm_chat(message, user_input, chat_history=None):
+def llm_chat(message, chat_history=None):
     """
     请求chatGPT函数，支持聊天记录
     :param message: 要发送的消息
-    :param user_input: 用户输入
     :param chat_history: 聊天记录
     :return: chatGPT回复, 错误码
     """

@@ -381,7 +381,7 @@ class ToolExecuterImpl(ToolExecuter):
             prompt = config.API_RESULT_PROMPT.format(api_result=json.dumps(data_part, ensure_ascii=False))
             
             # 调用AI处理结果
-            result, err_code = llm_chat(prompt, None, chat_history)
+            result, err_code = llm_chat(prompt, chat_history)
 
             if err_code != 0:
                 logger.error("处理API结果时出错: %s", err_code)

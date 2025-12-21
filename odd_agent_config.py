@@ -21,7 +21,7 @@ LLM_MAX_TOKEN = 2048                            # LLM最大token数，超过LLM_
 API_PRETTY_RSP = False                          # 是否调用LLM美化API响应，True-美化，False-不美化
 API_TIMEOUT = 10                                # API请求超时时间（秒）
 API_RETRY_COUNT = 3                             # API请求失败重试次数
-API_FAKE_API_RESULT = 1                         # 模拟API结果，0-不模拟，1-模拟，2-自定义API
+API_FAKE_API_RESULT = 2                         # 模拟API结果，0-不模拟，1-模拟，2-自定义API
 API_FORCE_ONESHOT = 0                           # 模拟API结果测试时，强制使用oneshot模式（一次请求必须同时返回intent+slots）
 
 # 工具配置
@@ -68,11 +68,11 @@ LOG_PATH = './log/'
 LOG_FILE = 'odd_agent.log'
 
 # 会议系统配置
-APS_IP = "10.67.20.13"
+APS_IP = "10.67.20.14"
 APS_AUTO_LOGIN = True
 APS_CONFIG = {
     "ip": f"{APS_IP}",
-    "user_name": "wgh1",
+    "user_name": "wgh",
     "password": "888888",
     "oauth_consumer_key": "1",
     "oauth_consumer_secret": "1",

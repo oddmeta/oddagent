@@ -82,7 +82,6 @@ class OddAgent:
             last_tool_info = f"上次识别到的工具：{self.last_recognized_tool}" if self.last_recognized_tool else "上次识别到的工具：无"
             user_choice, error = llm_chat(
                 f"有下面多种工具，需要你根据用户输入进行判断，以最新的聊天记录为准，只答选项\n{last_tool_info}\n{options_prompt}\n用户输入：{user_input}\n请回复序号：", 
-                user_input,
                 self.chat_history
             )
 
@@ -189,7 +188,7 @@ class OddAgent:
         options_prompt += "\n0. 无工具/无法判断"
 
         prompt = tool_prompts.PROMPT_NO_TOOL_RESPONSE.format(user_input, options_prompt)
-        response, err_code = llm_chat(prompt, user_input, self.chat_history)
+        response, err_code = llm_chat(prompt, self.chat_history)
 
         if err_code != 0:
             logger.error(f"调用LLM API时出现错误：{err_code}")
@@ -215,7 +214,7 @@ class OddAgent:
             user_input
         )
         
-        response, error = llm_chat(prompt, user_input, self.chat_history)
+        response, error = llm_chat(prompt, self.chat_history)
         logger.debug(f'is_tool_switched: {prompt}, response: {response}, error: {error}')
         if error:
             logger.error(f"LLM聊天错误: {error}")

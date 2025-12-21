@@ -16,7 +16,7 @@ if exist requirements.txt (
 )
 
 REM start flask app
-echo start OddAgent service...
+echo start xiaoluo service...
 python app.py
 
 pause

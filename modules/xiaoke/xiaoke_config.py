@@ -1,5 +1,5 @@
 tool_config = {
-  "agent_api_base": "https://api.xiaoke.ai", 
+  "agent_api_base": "https://meeting.oddmeta.net", 
   "global_variants": [ 
     {"name": "confid", "desc": "会议ID，必须是13位数字，作为会议操作的唯一标识符", "type": "string", "required": False}, 
     {"name": "e164", "desc": "终端的E.164号，作为终端语音助手时使用", "type": "string", "required": False}
@@ -8,7 +8,7 @@ tool_config = {
     {
       "tool_name": "meeting_create",
       "name": "创建会议",
-      "description": "创建会议服务。开个xx，创建xx，建个xx，xx是会议名称",
+      "description": "创建会议服务。如：开个xx，创建xx，建个xx，调度上海。xx是会议名称",
       "parameters": [
         {"name": "meeting_name", "desc": "会议名称", "type": "string", "required": True},
       ],
@@ -27,7 +27,7 @@ tool_config = {
         { "tool_name": "meeting_create", "slots": { "meeting_name": "需求讨论会议" }},
         { "tool_name": "meeting_create", "slots": { "meeting_name": "晨会" }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_create",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_create",
       "tool_api_method": "POST",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvo65ceo54#POST_/api/v1/mc/confs",
       "enabled": True
@@ -59,7 +59,7 @@ tool_config = {
         { "tool_name": "meeting_invite", "slots": { "invitees": "Jacky,韦国华" }},
         { "tool_name": "meeting_invite", "slots": { "invitees": "3E会议室" }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_invite",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_invite",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#POST_/api/v1/vc/confs/{conf_id}/mts",
       "tool_api_method": "POST",
       "enabled": True
@@ -84,7 +84,7 @@ tool_config = {
         { "tool_name": "meeting_dropout", "slots": { "participants": "Jacky,Catherine" }},
         { "tool_name": "meeting_dropout", "slots": { "participants": "Catherine" }},
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_dropout",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_dropout",
       "tool_api_doc": "http://10.8.0.240:808/docs/video_open_api/video_open_api-1gorvns7st0rg#DELETE_/api/v1/vc/confs/{conf_id}/online_mts",
       "tool_api_method": "POST",
       "enabled": True
@@ -105,7 +105,7 @@ tool_config = {
         { "tool_name": "meeting_leave", "slots": { }},
         { "tool_name": "meeting_leave", "slots": { }},
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_leave",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_leave",
       "tool_api_method": "POST",
       "enabled": True
     },    
@@ -126,7 +126,7 @@ tool_config = {
         { "tool_name": "meeting_end", "slots": { }},
         { "tool_name": "meeting_end", "slots": { }},
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_end",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_end",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -157,7 +157,7 @@ tool_config = {
         { "tool_name": "meeting_open_camera", "slots": { }},
         { "tool_name": "meeting_open_camera", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_camera",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_open_camera",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -188,7 +188,7 @@ tool_config = {
         { "tool_name": "meeting_close_camera", "slots": { }},
         { "tool_name": "meeting_close_camera", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_camera",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_close_camera",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -219,7 +219,7 @@ tool_config = {
         { "tool_name": "meeting_open_microphone", "slots": { }},
         { "tool_name": "meeting_open_microphone", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_microphone",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_open_microphone",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -242,7 +242,7 @@ tool_config = {
         { "tool_name": "meeting_close_microphone", "slots": { }},
         { "tool_name": "meeting_close_microphone", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_microphone",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_close_microphone",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -265,7 +265,7 @@ tool_config = {
         { "tool_name": "send_dual_stream", "slots": { }},
         { "tool_name": "send_dual_stream", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/send_dual_stream",
+      "tool_api_url": "https://meeting.oddmeta.net/api/send_dual_stream",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -289,7 +289,7 @@ tool_config = {
         { "tool_name": "stop_dual_stream", "slots": { }},
         { "tool_name": "stop_dual_stream", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/stop_dual_stream",
+      "tool_api_url": "https://meeting.oddmeta.net/api/stop_dual_stream",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -313,7 +313,7 @@ tool_config = {
         { "tool_name": "meeting_open_subtitle", "slots": { }},
         { "tool_name": "meeting_open_subtitle", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_subtitle",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_open_subtitle",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -336,7 +336,7 @@ tool_config = {
         { "tool_name": "meeting_open_notes", "slots": { }},
         { "tool_name": "meeting_open_notes", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_open_notes",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_open_notes",
       "tool_api_method": "POST",
       "enabled": True
     },  
@@ -359,7 +359,7 @@ tool_config = {
         { "tool_name": "meeting_close_notes", "slots": { }},
         { "tool_name": "meeting_close_notes", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/meeting_close_notes",
+      "tool_api_url": "https://meeting.oddmeta.net/api/meeting_close_notes",
       "tool_api_method": "POST", 
       "enabled": True
     }, 
@@ -385,7 +385,7 @@ tool_config = {
         { "tool_name": "start_polling", "slots": { }},
         { "tool_name": "start_polling", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/start_polling",
+      "tool_api_url": "https://meeting.oddmeta.net/api/start_polling",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -408,7 +408,7 @@ tool_config = {
         { "tool_name": "stop_polling", "slots": { }},
         { "tool_name": "stop_polling", "slots": { }}
       ], 
-      "tool_api_url": "https://api.xiaoke.ai/api/stop_polling",
+      "tool_api_url": "https://meeting.oddmeta.net/api/stop_polling",
       "tool_api_method": "POST",
       "enabled": True
     },
@@ -429,7 +429,7 @@ tool_config = {
         { "tool_name": "chat_terminate", "slots": { }},
         { "tool_name": "chat_terminate", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/chat_terminate",
+      "tool_api_url": "https://meeting.oddmeta.net/api/chat_terminate",
       "tool_api_method": "POST", 
       "enabled": False
     },
@@ -453,7 +453,7 @@ tool_config = {
         { "tool_name": "chat_log", "slots": { }},
         { "tool_name": "chat_log", "slots": { }}
       ],
-      "tool_api_url": "https://api.xiaoke.ai/api/chat_log",
+      "tool_api_url": "https://meeting.oddmeta.net/api/chat_log",
       "tool_api_method": "POST", 
       "enabled": False
     }
