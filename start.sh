@@ -15,8 +15,8 @@ source .venv/bin/activate
 
 # Install dependencies
 echo "Installing Python dependencies..."
-pip install -r requirements.txt
+pip install -r oddagent/requirements.txt
 
 # Start the service
-echo "Starting backend service..."
-python3 app.py
+echo "Starting xiaoluo backend service..."
+python3 -m oddagent.app

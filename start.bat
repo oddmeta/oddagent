@@ -10,13 +10,13 @@ if exist venv (
 )
 
 REM install project dependencies if requirements.txt exists
-if exist requirements.txt (
+if exist oddagent/requirements.txt (
     echo install project dependencies...
-    pip install -r requirements.txt
+    pip install -r oddagent/requirements.txt
 )
 
 REM start flask app
 echo start xiaoluo service...
-python app.py
+python3 -m oddagent.app
 
 pause
