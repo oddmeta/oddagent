@@ -340,9 +340,9 @@ def load_skills():
 
     skill_list = []
 
-    # 查找所有.json.py结尾的文件
+    # 查找所有.json结尾的文件
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    json_py_files = []
+    json_files = []
 
     if config.TOOL_CONFIG_FILE == "*":
         for file_path in glob.glob(f"**/{config.TOOL_CONFIG_FILE}{config.TOOL_CONFIG_FILE_EXT}", recursive=True):
@@ -350,29 +350,29 @@ def load_skills():
             if not os.path.basename(file_path).startswith("__"):
                 file_path = os.path.join(current_dir, file_path)
                 print(f"处理文件: {file_path}")
-                json_py_files.append(file_path)
+                json_files.append(file_path)
     else:
-        json_py_files = [config.TOOL_CONFIG_FILE]
+        json_files = [config.TOOL_CONFIG_FILE]
 
-    if not json_py_files:
-        logger.error(f"当前路径：{current_dir}， 没有找到.json.py结尾的文件")
+    if not json_files:
+        logger.error(f"当前路径：{current_dir}， 没有找到.json结尾的文件")
         return {"agent_tool_list": []}
     
-    print(f"找到 {len(json_py_files)} 个.json.py文件")
+    print(f"找到 {len(json_files)} 个.json文件")
     print("==================================================================")
 
     # 处理每个文件
-    for file_path in json_py_files:
+    for file_path in json_files:
         print("------------------------------------------------------------------")
         print(f"处理文件: {file_path}")
         print("------------------------------------------------------------------")
         
-        # 处理文件
+        # 处理每个文件
         processed_tools = process_json_py_file(file_path)
         
         if processed_tools:
-            # 生成输出文件名（将.json.py改为.json）
-            output_filename = os.path.basename(file_path).replace('.py', '')
+            # 生成输出文件名（将.json改为.json）
+            output_filename = os.path.basename(file_path)
             
             # 保存为JSON文件
             result = {

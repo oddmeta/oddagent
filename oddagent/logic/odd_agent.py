@@ -531,7 +531,7 @@ class OddAgent:
                     'index': 0, 
                     'message': {
                         'role': 'assistant', 
-                        'content': '您好，小科是会议助手，请问您有什么会议业务需要小科处理吗？', 
+                        'content': '您好，我是一个会议助手，请问您有什么会议业务需要处理吗？', 
                         'refusal': None, 
                         'annotations': None, 
                         'audio': None, 

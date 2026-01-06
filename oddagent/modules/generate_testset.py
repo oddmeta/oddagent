@@ -26,6 +26,8 @@ def load_python_module(file_path):
     """加载Python模块"""
     module_name = os.path.basename(file_path).replace('.', '_')
     spec = importlib.util.spec_from_file_location(module_name, file_path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"无法加载Python模块: {file_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -44,18 +46,30 @@ def process_tool_item(tool_item):
     return processed_tool
 
 def process_json_py_file(file_path):
-    """处理单个.json.py文件"""
+    """处理单个配置文件，支持JSON和Python格式"""
     try:
-        # 加载Python模块
-        module = load_python_module(file_path)
-        
-        # 检查模块中是否有agent_tool_list属性
         agent_tool_list = None
-        if hasattr(module, 'tool_config'):
-            # 从tool_config中获取agent_tool_list
-            tool_config = module.tool_config
+        
+        # 根据文件扩展名选择加载方式
+        if file_path.endswith('.json'):
+            # 直接加载JSON文件
+            with open(file_path, 'r', encoding='utf-8') as f:
+                tool_config = json.load(f)
             if isinstance(tool_config, dict) and 'agent_tool_list' in tool_config:
                 agent_tool_list = tool_config['agent_tool_list']
+        elif file_path.endswith('.py'):
+            # 加载Python模块
+            module = load_python_module(file_path)
+            
+            # 检查模块中是否有agent_tool_list属性
+            if hasattr(module, 'tool_config'):
+                # 从tool_config中获取agent_tool_list
+                tool_config = module.tool_config
+                if isinstance(tool_config, dict) and 'agent_tool_list' in tool_config:
+                    agent_tool_list = tool_config['agent_tool_list']
+        else:
+            print(f"警告: 不支持的文件格式: {file_path}")
+            return None
         
         if agent_tool_list is None:
             print(f"警告: 文件 {file_path} 中没有找到 agent_tool_list 属性")
@@ -71,8 +85,9 @@ def process_json_py_file(file_path):
         
     except Exception as e:
         print(f"处理文件 {file_path} 时出错: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
-
 
 def main(config_file:str = "*", config_file_ext: str = "_config.py"):
     """主函数"""
@@ -82,25 +97,25 @@ def main(config_file:str = "*", config_file_ext: str = "_config.py"):
     print(f"开始处理当前目录: {current_dir}")
     print("==================================================================")
     
-    # 查找所有.json.py结尾的文件
-    json_py_files = []
+    # 查找所有配置文件
+    config_files = []
 
     for file_path in glob.glob(f"**/{config_file}{config_file_ext}", recursive=True):
         # 排除__init__.py等非配置文件
         if not os.path.basename(file_path).startswith("__"):
             file_path = os.path.join(current_dir, file_path)
             print(f"处理文件: {file_path}")
-            json_py_files.append(file_path)
+            config_files.append(file_path)
 
-    if not json_py_files:
-        print("没有找到.json.py结尾的文件")
+    if not config_files:
+        print(f"没有找到{config_file_ext}结尾的文件")
         return {"agent_tool_list": []}
     
-    print(f"找到 {len(json_py_files)} 个.json.py文件")
+    print(f"找到 {len(config_files)} 个配置文件")
     print("==================================================================")
 
     # 处理每个文件
-    for file_path in json_py_files:
+    for file_path in config_files:
         print("------------------------------------------------------------------")
         print(f"处理文件: {file_path}")
         print("------------------------------------------------------------------")
@@ -109,9 +124,13 @@ def main(config_file:str = "*", config_file_ext: str = "_config.py"):
         processed_tools = process_json_py_file(file_path)
         
         if processed_tools:
-            # 生成输出文件名（将.json.py改为.json）
+            # 生成输出文件名
             base_dir = os.path.dirname(file_path)
-            output_filename = os.path.basename(file_path).replace('.py', '.test.json')
+            output_filename = os.path.basename(file_path)
+            if output_filename.endswith('.py'):
+                output_filename = output_filename.replace('.py', '.test.json')
+            else:
+                output_filename = output_filename.replace('.json', '.test.json')
             output_path = os.path.join(base_dir, output_filename)
             
             # 保存为JSON文件
@@ -132,4 +151,3 @@ def main(config_file:str = "*", config_file_ext: str = "_config.py"):
 
 if __name__ == "__main__":
     main()
-

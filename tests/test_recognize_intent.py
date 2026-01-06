@@ -8,8 +8,7 @@ import time
 from utils import load_config, compare_slots, _logging, TestItem, TestResults
 
 TEST_CONFIG_FILE = '../modules/GAB/GAB_config.test.json'            # 请确保此路径正确
-TEST_CONFIG_FILE = '../modules/xiaoke/xiaoke_config.test.json'      # 请确保此路径正确
-API_BASE_URL = 'http://172.16.237.141:5050/oddagent/chat'           # API地址
+TEST_CONFIG_FILE = '../modules/xiaoluo/conference_config.test.json' # 请确保此路径正确
 API_BASE_URL = 'http://127.0.0.1:5050/oddagent/chat'                # API地址
 
 test_item_list = []

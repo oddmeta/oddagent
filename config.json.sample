@@ -5,8 +5,8 @@
   "MODEL": "ernie-4.5-turbo-128k",
   "API_KEY": "your api key",
 
-  "TOOL_CONFIG_FILE_EXT": "_config.py",
-  "TOOL_CONFIG_FILE": "agents/xiaoluo/xiaoluo_config.py",
+  "TOOL_CONFIG_FILE_EXT": "_config.json",
+  "TOOL_CONFIG_FILE": "agents/xiaoluo/conference_config.json",
   
   "LLM_TYPE": "Qwen3-30B-A3B-Instruct",
   

@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oddagent"
-version = "1.1.8"
-description = "A configurable Intent Recognition Agent Framework"
+version = "1.2.29"
+description = "A General-Purpose Intent and Command Recognition Framework"
 readme = "README.md"
 license = "MIT"
 
 authors = [
-    {name = "Jacky Wei", email = "jacky@oddmeta.com"},
-    {name = "Catherine Wei", email = "catherine@oddmeta.com"}
+    {name = "Catherine Wei", email = "catherine@oddmeta.com"},
+    {name = "Jacky Wei", email = "jacky@oddmeta.com"}
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
