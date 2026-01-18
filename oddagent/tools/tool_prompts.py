@@ -37,18 +37,22 @@ PROMPT_SLOT_UPDATE_QWEN3 = """你是一个信息抽取机器人。
 '''
 name是slot名称，参数名称
 desc是slot的注释，可以做为slot信息的补充说明
+required是slot是否必填，true为必填，false为选填
+type是slot的类型，integer为整数，string为字符串，boolean为布尔值，datetime为日期时间
+value是slot的值
 '''
 
 需求：
 #01 根据用户输入内容提取有用的信息到value值，严格提取，没有提及就丢弃该元素，禁止将“未提及”写入value
 #02 返回JSON结果，只需要name和value值，不允许返回其他内容
 
+JSON：{}
+
 返回样例：
 ```
 {}
 ```
 
-JSON：{}
 输入：{}
 答：
 """

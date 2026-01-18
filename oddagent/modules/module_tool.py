@@ -197,7 +197,7 @@ def is_slot_fully_filled(json_data):
     # 遍历JSON数据中的每个元素
     for item in json_data:
         # 检查value字段是否为空字符串
-        if item.get('value') == '':
+        if item.get('required', False) and item.get('value') == '':
             return False  # 如果发现空字符串，返回False
     return True  # 如果所有value字段都非空，返回True
 
@@ -210,7 +210,7 @@ def get_slot_parameters_from_tool(parameters):
     """
     output_data = []
     for item in parameters:
-        new_item = {"name": item["name"], "desc": item["desc"], "type": item["type"], "value": ""}
+        new_item = {"name": item["name"], "desc": item["desc"], "type": item["type"], "value": "", "required": item.get("required", False)}
         output_data.append(new_item)
     return output_data
 

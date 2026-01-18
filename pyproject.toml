@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oddagent"
-version = "1.2.29"
+version = "1.2.30"
 description = "A General-Purpose Intent and Command Recognition Framework"
 readme = "README.md"
 license = "MIT"

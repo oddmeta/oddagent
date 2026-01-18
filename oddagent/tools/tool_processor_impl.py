@@ -61,8 +61,8 @@ class ToolProcessorImpl(ToolProcessor):
         else:
             message = tool_prompts.PROMPT_SLOT_UPDATE_QWEN3.format(self.tool_name, 
                                                             tool_get_current_date(), 
-                                                            self.slot_dynamic_example, 
                                                             slots_str, 
+                                                            self.slot_dynamic_example, 
                                                             user_input)
 
         # message = tool_prompts.PROMPT_SLOT_UPDATE_QWEN3.format(self.tool_name, 
@@ -125,6 +125,10 @@ class ToolProcessorImpl(ToolProcessor):
                     slots_data[slot_key] = slot['value']
         logger.debug(f'slots_data: {slots_data}')
         
+        ## 当前session的数据已经保存到slots_data中，清除保存在self.slot中的value值，避免后续重复使用
+        for slot in self.slot:
+            slot['value'] = ""
+
         # 调用工具API
         try:
             api_result = self.tool_executer.execute(slots_data=slots_data, api_mode=api_mode)
