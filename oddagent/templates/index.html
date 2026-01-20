@@ -1,0 +1,532 @@
+<html lang="en">
+<head> 
+    <meta charset="utf-8"></meta>
+    <title>OddAgent Demo</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="dist/css/adminlte.min.css">
+    
+    <style>
+      .content {
+        overflow: hidden; /* 防止内容区域出现滚动条 */
+      }
+      .card-body {
+        overflow-y: auto; /* 仅在卡片内容超出时显示垂直滚动条 */
+      }
+    </style>
+    
+    <!-- 添加麦克风样式 -->
+    <style>
+      .microphone-container {
+        position: relative;
+        display: inline-block;
+      }
+      
+      .microphone-btn {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #dc3545;
+        border: none;
+        color: white;
+        font-size: 36px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+      
+      .microphone-btn:hover {
+        background-color: #c82333;
+        transform: scale(1.05);
+      }
+      
+      .microphone-btn.recording {
+        background-color: #ffc107;
+        animation: pulse 1.5s infinite;
+      }
+      
+      .recording-text {
+        position: absolute;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 0 2px rgba(0,0,0,0.5);
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,193,7,0.7); }
+        70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255,193,7,0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,193,7,0); }
+      }
+    </style>
+    
+</head>
+
+<body>
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-3">
+      <div class="text-center col-12">
+        <h1>OddAgent语音助手智能体 Demo</h1>
+      </div>
+      <div class="text-center col-12">
+        <button type="button" class="btn btn-primary" id="full_api_doc">完整接口文档</button>
+        <button type="button" class="btn btn-secondary" id="mcp_api_doc">MCP协议文档</button>
+      </div>
+  </div><!-- /.container-fluid -->
+</section>
+<!-- /.content-header -->
+
+
+<section class="content"> 
+
+  <div class="row justify-content-center"> <!-- 添加row容器并使用justify-content-center类 -->
+
+    <div class="col-md-4">
+      <div class="card card-primary card-outline">
+
+        <div class="card-header">
+          <h3 class="card-title">语音输入</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+        <!-- /.card-header -->
+
+        <div class="card-body text-center">
+          <!-- 修改为麦克风图标 -->
+          <div class="microphone-container">
+            <button 
+              class="microphone-btn"
+              id="microphoneBtn"
+              title="长按启动录音，点击停止"
+            >
+              <i class="fas fa-microphone"></i>
+              <span class="recording-text" id="recordingText" style="display: none;">录音中</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!--
+          <div class="form-group" style="display: flex; justify-content: center; align-items: center;">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="enableSensword" name="enableSensword" checked>
+              <label class="form-check-label" for="enableSensword">启用热词</label>
+            </div>
+            <div class="form-check form-check-inline ml-4">
+              <input class="form-check-input" type="checkbox" id="enableHotword" name="enableHotword" checked>
+              <label class="form-check-label" for="enableHotword">启用敏感词</label>
+            </div>
+          </div>
+          -->
+
+          <div class="form-group" style="display: flex; justify-content: center; align-items: center;">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="enableAutosend" name="enableAutosend" checked>
+              <label class="form-check-label" for="enableAutosend">自动发送</label>
+            </div>
+          </div>
+
+          <div class="form-group text-center d-flex align-items-center justify-content-center">
+            <label for="inputText" class="mr-2 mb-0">输入</label>
+            <input type="text" class="form-control" id="inputText" name="inputText" required placeholder="请输入您的命令..." style="width: auto; flex: 1; max-width: 500px;">
+            <button type="button" class="btn btn-success ml-2" onclick="sendMessage()">发送</button>
+          </div>
+  
+          <div class="form-group text-center">
+            <label for="recognitionResult">识别结果</label>
+              <textarea class="form-control" id="recognitionResult" rows="12" cols="24" placeholder="识别结果将显示在这里"></textarea>
+          </div>
+        </div>
+
+        <div class="card-footer text-right">
+          <button type="reset" class="btn btn-default" onclick="reset();"><i class="fas fa-times"></i> 清除</button>
+          <!-- 导出按钮 -->
+          <button type="button" class="btn btn-success" id="btnExportWav" onclick="exportWav();" disabled>
+              <i class="fas fa-download"></i> 导出WAV
+          </button>
+        </div>
+
+      </div>
+    </div>
+    <div class="col-md-2"> 
+      {% for skill in skills %}
+      <div class="card card-primary card-outline"> 
+        <div class="card-header active">
+          <h3 class="card-title">技能：{{skill.file_name}}</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body"> 
+          {% for item in skill.agent_tool_list %}
+          <div class="list-group" style="background-color: #3e0af9;"> 
+            <a href="#" class="list-group-item list-group-item-action text-center" onclick="toggleInstructions('instructions-{{item.tool_name}}'); return false;"><b>【{{item.name}}】</b></a>
+            <div id="instructions-{{item.tool_name}}" class="list-group bg-white" style="display: none;">
+              {% for instruct in item.test_instructions  %}
+              <a href="#" class="list-group-item list-group-item-action text-center" onclick="testInstruct('{{instruct}}'); return false;" style="color: #a8a8a8 !important;">{{instruct}}</a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+
+  </div>
+  <!-- /.container-fluid -->
+</section>
+
+<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <img src="images/progress.gif" />
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</body>
+
+
+<script src="common/oddrecoder.js"></script>
+<script src="common/oddasr.js"></script>
+
+<script src="dist/js/FileSaver.min.js"></script>
+
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+
+
+<script>
+  var recorder = null;
+  var isRecording = false;
+  var longPressTimer = null;
+  var microphoneBtn = document.getElementById('microphoneBtn');
+  var recordingText = document.getElementById('recordingText');
+  var inputText = document.getElementById('inputText');
+  var autoSend = document.getElementById('enableAutosend');
+  
+  function testInstruct(instruction) { 
+    inputText.value = instruction;
+  }
+
+  function toggleInstructions(elementId) {
+    var element = document.getElementById(elementId);
+    if (element) {
+      element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';
+    }
+  }
+  
+  function sendMessage() {
+      var message = inputText.value;
+      if (message.trim() === '') {
+        alert('请输入您的命令！');
+        return;
+      }
+      inputText.value = '';
+
+      // 显示用户输入的问题
+      var chatOutput = document.getElementById('recognitionResult');
+      chatOutput.innerHTML += '你: ' + message + '\n';
+
+      // 发送请求到 Flask API
+      fetch('/oddagent/chat', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ question: message })
+      })
+      .then(response => response.json())
+      .then(data => {
+          // 显示返回的答案
+          let displayAnswer = data.answer;
+          // 判断answer是否为JSON字符串并尝试解析
+          if (typeof displayAnswer === 'object' && displayAnswer !== null) {
+            // 如果已经是对象类型，直接转换为格式化的字符串
+            displayAnswer = JSON.stringify(displayAnswer, null, 2);
+          } else if (typeof displayAnswer === 'string') {
+
+          }
+          chatOutput.innerHTML += '回答: ' + displayAnswer + '\n';
+
+          chatOutput.scrollTop = chatOutput.scrollHeight; // 滚动到底部
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  inputText.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+          sendMessage();
+      }
+  });
+
+  // 长按启动录音
+  microphoneBtn.addEventListener('mousedown', function() {
+    if (!isRecording) {
+      longPressTimer = setTimeout(function() {
+        start_recoder();
+      }, 500); // 500毫秒长按触发
+    }
+  });
+  
+  // 鼠标抬起或离开取消长按
+  microphoneBtn.addEventListener('mouseup', function() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+
+    if (isRecording) {
+      stop_recoder();
+    }
+  });
+  
+  microphoneBtn.addEventListener('mouseleave', function() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  });
+  
+  // 点击停止录音
+  microphoneBtn.addEventListener('click', function() {
+    if (isRecording) {
+      stop_recoder();
+    }
+  });
+  
+  // 触摸屏支持
+  microphoneBtn.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (!isRecording) {
+      longPressTimer = setTimeout(function() {
+        start_recoder();
+      }, 500);
+    }
+  });
+  
+  microphoneBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    if (isRecording) {
+      stop_recoder();
+    }
+  });
+  
+  function start_recoder() {
+    if (!recorder) {
+      recorder = new OddRecoder();
+    }
+    if (recorder && !isRecording) {
+      recorder.startRecoder();
+      isRecording = true;
+      microphoneBtn.classList.add('recording');
+      recordingText.style.display = 'block';
+      microphoneBtn.innerHTML = '<i class="fas fa-microphone"></i><span class="recording-text" id="recordingText">录音中</span>';
+      document.getElementById('btnExportWav').disabled = true;
+    }
+  }
+  
+  function stop_recoder() {
+    if (recorder && isRecording) {
+      recorder.stopRecoder();
+      isRecording = false;
+      microphoneBtn.classList.remove('recording');
+      recordingText.style.display = 'none';
+      microphoneBtn.innerHTML = '<i class="fas fa-microphone"></i><span class="recording-text" id="recordingText" style="display: none;">录音中</span>';
+      document.getElementById('btnExportWav').disabled = false;
+      
+      // 停止录音后自动上传音频并获取转写结果
+      autoTranscribeAudio();
+    }
+  }
+
+  // 自动转写音频函数
+  function autoTranscribeAudio() {
+    if (recorder && recorder.audioChunks && recorder.audioChunks.length > 0) {
+      try {
+        const wavBlob = recorder.exportWav();
+        if (wavBlob) {
+          console.log('准备上传音频到/v1/asr接口，大小:', wavBlob.size, '字节');
+          modalDlg(true);
+          update_transmit(1);
+          
+          // 创建FormData对象并添加音频文件和参数
+          const formData = new FormData();
+          formData.append("audio", wavBlob, 'recording.wav');
+          formData.append("mode", "file"); // 设置模式为file
+          formData.append("output_format", "txt"); // 设置输出格式为纯文本
+          
+          // 检测是否启用热词
+          if ($('input[name="enableHotword"]:checked').val() == 'on') {
+            const hotwords = "test123";
+            console.log("启用热词: ", hotwords);
+            formData.append("hotwords", hotwords);
+          }
+          
+          // 发送音频到/v1/asr接口
+          $.ajax({
+            type: 'POST',
+            url: '/proxy/asr/sentence',
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            async: true,
+            success: function (data) {
+              modalDlg(false);
+              update_transmit(0);
+              console.log('ASR转写结果:', data);
+              
+              // 显示转写结果
+              if (data.text) {
+                console.log('转写成功:\n' + data.text);
+                // 这里可以添加代码将转写结果显示在页面上
+                if (inputText)
+                  inputText.value = data.text;
+                if (autoSend.checked)
+                  sendMessage();
+              } else if (data.error) {
+                console.error('转写失败: ' + data.error);
+              }
+            }, 
+            error: function (xhr, status, error) {
+              modalDlg(false);
+              update_transmit(0);
+              console.error('上传音频出错:', error);
+              console.error('XHR状态:', xhr.status, '响应文本:', xhr.responseText);
+              console.error('上传音频失败: ' + (xhr.responseJSON?.error || error || '未知错误'));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('准备音频数据出错: ', error);
+        alert('准备转写音频失败: ' + error.message);
+      }
+    } else {
+      alert('没有可转写的录音数据');
+    }
+  }
+
+  // 使用FileSaver.js保存文件
+  function exportWav() {
+    if (recorder && recorder.audioChunks && recorder.audioChunks.length > 0) {
+      try {
+        const wavBlob = recorder.exportWav();
+        if (wavBlob) {
+          const filename = 'recording_' + new Date().toISOString().replace(/[:.]/g, '-') + '.wav';
+          console.log('导出WAV文件:', filename, '大小:', wavBlob.size, '字节');
+          
+          // 检查浏览器是否支持saveAs函数
+          if (typeof saveAs === 'function') {
+            saveAs(wavBlob, filename);
+          } else {
+            // 如果FileSaver.js不可用，使用替代方法
+            const url = URL.createObjectURL(wavBlob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }, 100);
+          }
+        }
+      } catch (error) {
+        console.error('导出WAV文件出错: ', error);
+        alert('导出WAV文件失败: ' + error.message);
+      }
+    } else {
+      alert('没有可导出的录音数据');
+    }
+  }
+
+  function reset() {
+    if (recorder) {
+      recorder.stopRecoder();
+    }
+    $("#btnExportWav").prop("disabled", true);
+  }
+
+  function hideModalDlg() {
+    $("#myModal").modal('hide');
+  }
+
+  function modalDlg(show) {
+    if (show == true) {
+      console.log("show modal dialog");
+      $("#myModal").modal({ backdrop: 'false', keyboard: false });
+    } else {
+      hideModalDlg();
+      //setTimeout(hideModalDlg , 3000);
+      console.log("hide modal dialog");
+    }
+  }
+
+  function update_transmit(flag) {
+      $.ajaxSetup({ "xhrFields": true });
+      $.ajax({
+        url: "/proxy/asr/sentence/update_transmit",
+        data: JSON.stringify({ "flag": flag }),
+        contentType: "application/json",
+        type: "Post",
+        traditional: true
+      })
+  }
+
+  $('#full_api_doc').on("click",function() {
+    var element = document.createElement('a');
+    element.href = "/download/full_api_doc.md";
+    element.target = "_blank";
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setTimeout(function () {
+      exportDialog.close();
+    }, 2000);
+  })
+
+  $('#mcp_api_doc').on("click",function() {
+    var element = document.createElement('a');
+    element.href = "/download/mcp_protocol.md";
+    element.target = "_blank";
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setTimeout(function () {
+      exportDialog.close();
+    }, 2000);
+  })
+
+</script>
+
+</html>

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oddagent"
+version = "1.2.30"
+description = "A General-Purpose Intent and Command Recognition Framework"
+readme = "README.md"
+license = "MIT"
+
+authors = [
+    {name = "Catherine Wei", email = "catherine@oddmeta.com"},
+    {name = "Jacky Wei", email = "jacky@oddmeta.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "Flask",
+    "requests",
+    "Werkzeug",
+    "flask_cors",
+    "python-dotenv",
+]
+
+[project.urls]
+Homepage = "https://oddmeta.net/oddagent"
+Repository = "https://github.com/oddmeta/oddagent"
+Issues = "https://github.com/oddmeta/oddagent/issues"
+
+[project.scripts]
+oddagent = "oddagent.app:main"

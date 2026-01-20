@@ -1,0 +1,67 @@
+{
+  "DEBUG": true,
+  
+  "GPT_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "MODEL": "qwen3-30b-a3b",
+  "LLM_TYPE": "Qwen3-30B-A3B-Instruct",
+  "API_KEY": "your dashscope api key",
+  
+  "SYSTEM_PROMPT": "You are a helpful assistant.",
+  "NO_TOOL_RESPONSE": "您好，我是一个会议助手，我还不会这项技能。我可以帮您创建会议，设置发言人，广播会场，主看会场，选看会场，或请求指定会场发言等。",
+  "API_RESULT_PROMPT": "以下是查询的结果，请向用户解释，禁止使用markdown：\n\n{api_result}：",
+  
+  "LLM_MAX_HISTORY_MESSAGE": 4,
+  "LLM_FORCE_NO_THINK": true,
+  "LLM_TEMPERATURE": 0,
+  "LLM_MAX_TOKEN": 2048,
+  
+  "API_PRETTY_RSP": false,
+  "API_TIMEOUT": 10,
+  "API_RETRY_COUNT": 3,
+  "API_FAKE_API_RESULT": 1,
+  "API_FORCE_ONESHOT": 0,
+  
+  "TOOL_CONFIG_FILE_EXT": "_config.json",
+  "TOOL_CONFIG_FILE": "oddagent/modules/xiaoluo/conference_config.json",
+  
+  "FLASK_ENV": "development",
+  "BACKEND_HOST": "0.0.0.0",
+  "BACKEND_PORT": 5050,
+  "CORS_ORIGINS": "*",
+  "API_PREFIX": "/api",
+  
+  "MCP_VERSION": "1.0",
+  "MCP_SESSION_TIMEOUT": 3600,
+  "MCP_STREAM_ENABLED": true,
+  "MCP_API_PREFIX": "/mcp",
+  
+  "SUPPORTED_MODELS": [
+    "odd-mcp",
+    "odd-llm",
+    "qwen2.5-0.5b-instruct",
+    "qwen3-4b-instruct"
+  ],
+  
+  "ODD_ASR_URL": "http://47.116.14.194:9002",
+  "ODD_ASR_TOKEN": "your_odd_asr_token",
+  
+  "ODD_TTS_URL": "http://47.116.14.194:9003",
+  "ODD_TTS_TOKEN": "your_odd_tts_token",
+  
+  "LOG_LEVEL": "DEBUG",
+  "LOG_PATH": "./log/",
+  "LOG_FILE": "odd_agent.log",
+  
+  "APS_IP": "10.67.20.14",
+  "APS_AUTO_LOGIN": true,
+  "APS_CONFIG": {
+    "ip": "10.67.20.14",
+    "user_name": "wgh",
+    "password": "888888",
+    "oauth_consumer_key": "1",
+    "oauth_consumer_secret": "1",
+    "account_token": "",
+    "cookie_jar": "",
+    "base_api": "http://10.67.20.14/api/v1/"
+  }
+}
